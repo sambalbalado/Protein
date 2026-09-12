@@ -21,6 +21,7 @@ struct DashboardView: View {
                 VStack(alignment: .leading, spacing: ProteinTheme.Spacing.large) {
                     progressCard
                     quickAdds
+                    if let latest = entries.first { repeatLast(latest) }
                     entriesCard
                     PrimaryActionButton(title: "Add protein", systemImage: "plus") { editor = .new }
                 }
@@ -83,7 +84,9 @@ struct DashboardView: View {
             Text("Quick add").font(.headline)
             HStack(spacing: ProteinTheme.Spacing.small) {
                 ForEach([5, 10, 25], id: \.self) { grams in
-                    Button("+\(grams) g") { quickAdd(Double(grams)) }
+                    Button { quickAdd(Double(grams)) } label: {
+                        Text("+\(grams) g").lineLimit(1).minimumScaleFactor(0.6)
+                    }
                         .buttonStyle(.bordered).buttonBorderShape(.capsule).frame(maxWidth: .infinity)
                         .accessibilityHint("Adds \(grams) grams to today")
                 }
@@ -113,6 +116,10 @@ struct DashboardView: View {
                             }.contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
+                        .contextMenu {
+                            Button("Repeat now", systemImage: "arrow.clockwise") { repeatEntry(entry) }
+                            Button("Save as meal", systemImage: "bookmark") { saveAsMeal(entry) }
+                        }
                         .swipeActions { Button("Delete", systemImage: "trash", role: .destructive) { pendingDelete = entry } }
                         .accessibilityHint("Double tap to edit. Swipe for delete.")
                     }
@@ -127,7 +134,19 @@ struct DashboardView: View {
 
     private func ensureSettings() { do { _ = try repository().settings() } catch { errorMessage = error.localizedDescription } }
     private func quickAdd(_ grams: Double) { do { try repository().add(ProteinEntry(name: "Quick add", grams: grams)) } catch { errorMessage = error.localizedDescription } }
+    private func repeatEntry(_ entry: ProteinEntry) { do { try repository().add(ProteinEntry(name: entry.name, grams: entry.grams, note: entry.note)) } catch { errorMessage = error.localizedDescription } }
+    private func saveAsMeal(_ entry: ProteinEntry) { do { try repository().add(SavedMeal(name: entry.name, grams: entry.grams, note: entry.note)) } catch { errorMessage = error.localizedDescription } }
     private func delete(_ entry: ProteinEntry) { do { try repository().delete(entry); pendingDelete = nil } catch { errorMessage = error.localizedDescription } }
+
+    private func repeatLast(_ entry: ProteinEntry) -> some View {
+        Button { repeatEntry(entry) } label: {
+            Label("Repeat \(entry.name)", systemImage: "arrow.clockwise")
+                .font(.subheadline.weight(.semibold)).frame(maxWidth: .infinity).padding(.vertical, 10)
+        }
+        .buttonStyle(.bordered)
+        .buttonBorderShape(.roundedRectangle(radius: ProteinTheme.Radius.button))
+        .accessibilityHint("Creates a new entry now with \(format(entry.grams)) grams")
+    }
 
     private func save(_ value: EntryEditor, name: String, grams: Double, time: Date, note: String?) {
         do {
@@ -144,7 +163,7 @@ struct DashboardView: View {
 
     private func saveGoal(_ value: Double) {
         guard value.isFinite, (20...400).contains(value) else { errorMessage = "Choose a daily goal between 20 g and 400 g."; return }
-        do { let current = try repository().settings(); current.dailyProteinGoal = value; try repository().save(); showGoal = false }
+        do { try repository().updateGoal(value, at: .now); showGoal = false }
         catch { errorMessage = error.localizedDescription }
     }
 

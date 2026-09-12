@@ -4,6 +4,50 @@ import XCTest
 
 @MainActor
 final class ProteinPersistenceTests: XCTestCase {
+    func testInsightsUseDateRangeTotalsAndHistoricalGoals() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = try XCTUnwrap(TimeZone(identifier: "UTC"))
+        let start = try XCTUnwrap(ISO8601DateFormatter().date(from: "2026-09-01T00:00:00Z"))
+        let entries = [
+            ProteinEntry(name: "A", grams: 40, loggedAt: start.addingTimeInterval(3_600)),
+            ProteinEntry(name: "B", grams: 50, loggedAt: start.addingTimeInterval(86_400 + 3_600)),
+            ProteinEntry(name: "Midnight", grams: 10, loggedAt: start.addingTimeInterval(172_800))
+        ]
+        let goals = [
+            ProteinGoalChange(grams: 100, effectiveAt: .distantPast),
+            ProteinGoalChange(grams: 80, effectiveAt: start.addingTimeInterval(86_400))
+        ]
+
+        let days = ProteinInsights.days(from: start, through: start.addingTimeInterval(172_800), entries: entries, goalChanges: goals, fallbackGoal: 120, calendar: calendar)
+
+        XCTAssertEqual(days.map(\.total), [40, 50, 10])
+        XCTAssertEqual(days.map(\.goal), [100, 80, 80])
+        XCTAssertEqual(days.map(\.entryCount), [1, 1, 1])
+    }
+
+    func testSavedMealCanBeCreatedRenamedRepeatedAndDeleted() throws {
+        let container = try PersistenceController.makeInMemory()
+        let repository = SwiftDataProteinRepository(context: container.mainContext)
+        let meal = SavedMeal(name: "Yogurt", grams: 20)
+        try repository.add(meal)
+        XCTAssertEqual(try repository.savedMeals().count, 1)
+
+        meal.name = "Greek yogurt"
+        try repository.save()
+        XCTAssertEqual(try repository.savedMeals().first?.name, "Greek yogurt")
+
+        let repeatedAt = Date(timeIntervalSince1970: 1_800_000_000)
+        try repository.repeatMeal(meal, at: repeatedAt)
+        let repeated = try repository.entries(from: repeatedAt, to: repeatedAt.addingTimeInterval(1))
+        XCTAssertEqual(repeated.first?.name, "Greek yogurt")
+        XCTAssertEqual(repeated.first?.loggedAt, repeatedAt)
+        XCTAssertEqual(meal.lastUsedAt, repeatedAt)
+
+        try repository.delete(meal)
+        XCTAssertTrue(try repository.savedMeals().isEmpty)
+        XCTAssertEqual(repeated.count, 1)
+    }
+
     func testEntryValidationRejectsInvalidValues() {
         XCTAssertThrowsError(try ProteinEntryValidator.validate(name: " ", grams: 20))
         XCTAssertThrowsError(try ProteinEntryValidator.validate(name: "Eggs", grams: 0))

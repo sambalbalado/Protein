@@ -16,7 +16,7 @@ struct ProteinApp: App {
 
     var body: some Scene {
         WindowGroup {
-            DashboardView()
+            ProteinRootView()
         }
         .modelContainer(modelContainer)
     }

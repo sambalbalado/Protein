@@ -4,7 +4,7 @@ Protein is a premium-feeling minimalist, native iPhone app for tracking daily pr
 
 ## Status
 
-Day 2 adds offline manual logging, quick-add shortcuts, an editable daily goal, live derived totals, validation, and edit/delete controls.
+Day 3 adds seven-day charts, a goal-aware monthly calendar, day inspection, reusable meals, and repeat-entry shortcuts while preserving offline-first storage.
 
 ## Product principles
 
@@ -70,14 +70,16 @@ The checked-in bundle IDs and App Group use the generic `com.example` namespace.
 ### Architecture
 
 - `Protein/App`: application entry point and shared App Group constants
-- `Protein/Dashboard`: the empty-state dashboard shell
+- `Protein/Dashboard`: today's live progress and manual logging
+- `Protein/Insights`: shared weekly and monthly goal progress
+- `Protein/Meals`: reusable meal management and repeat logging
 - `Protein/DesignSystem`: spacing, radii, semantic colors, cards, and buttons
 - `Protein/Persistence`: SwiftData models, container setup, and repository boundary
 - `Protein/Widget`: WidgetKit extension using the same App Group identifier
 - `Protein/Tests`: deterministic in-memory persistence tests
-- `Logging`, `History`, `Meals`, and `Analysis`: feature boundaries reserved for later roadmap days
+- `Analysis`: feature boundary reserved for the AI roadmap days
 
-Views do not access SwiftData directly. `ProteinRepository` is the boundary for persistence operations, and `PersistenceController.makeInMemory()` supplies an isolated test store.
+Domain calculations and mutations stay behind `ProteinRepository` and testable core types. SwiftUI uses live SwiftData queries where immediate screen updates matter, while insights fetch only the visible week/month window. `PersistenceController.makeInMemory()` supplies an isolated test store.
 
 ### Local configuration and secrets
 

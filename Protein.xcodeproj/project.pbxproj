@@ -21,6 +21,9 @@
 		A1000000000000000000000D /* ProteinCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B10000000000000000000015 /* ProteinCore.framework */; };
 		A1000000000000000000000E /* ProteinCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B10000000000000000000015 /* ProteinCore.framework */; };
 		A1000000000000000000000F /* ProteinWidget.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = B10000000000000000000014 /* ProteinWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		A10000000000000000000010 /* ProteinRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000016 /* ProteinRootView.swift */; };
+		A10000000000000000000011 /* InsightsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000017 /* InsightsView.swift */; };
+		A10000000000000000000012 /* SavedMealsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000018 /* SavedMealsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -56,6 +59,9 @@
 		B10000000000000000000013 /* ProteinTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ProteinTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B10000000000000000000014 /* ProteinWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ProteinWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		B10000000000000000000015 /* ProteinCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ProteinCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		B10000000000000000000016 /* ProteinRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProteinRootView.swift; sourceTree = "<group>"; };
+		B10000000000000000000017 /* InsightsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsView.swift; sourceTree = "<group>"; };
+		B10000000000000000000018 /* SavedMealsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedMealsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -67,8 +73,8 @@
 
 /* Begin PBXGroup section */
 		D20000000000000000000001 = {isa = PBXGroup; children = (D20000000000000000000002, D20000000000000000000009, D20000000000000000000008, ); sourceTree = "<group>"; };
-		D20000000000000000000002 = {isa = PBXGroup; children = (D20000000000000000000003, D20000000000000000000004, D20000000000000000000005, D20000000000000000000006, D20000000000000000000007, D2000000000000000000000A, D2000000000000000000000B, ); path = Protein; sourceTree = "<group>"; };
-		D20000000000000000000003 = {isa = PBXGroup; children = (B10000000000000000000001, B10000000000000000000005, B1000000000000000000000C, ); path = App; sourceTree = "<group>"; };
+		D20000000000000000000002 = {isa = PBXGroup; children = (D20000000000000000000003, D20000000000000000000004, D2000000000000000000000C, D2000000000000000000000D, D20000000000000000000005, D20000000000000000000006, D20000000000000000000007, D2000000000000000000000A, D2000000000000000000000B, ); path = Protein; sourceTree = "<group>"; };
+		D20000000000000000000003 = {isa = PBXGroup; children = (B10000000000000000000001, B10000000000000000000016, B10000000000000000000005, B1000000000000000000000C, ); path = App; sourceTree = "<group>"; };
 		D20000000000000000000004 = {isa = PBXGroup; children = (B10000000000000000000002, ); path = Dashboard; sourceTree = "<group>"; };
 		D20000000000000000000005 = {isa = PBXGroup; children = (B10000000000000000000003, ); path = DesignSystem; sourceTree = "<group>"; };
 		D20000000000000000000006 = {isa = PBXGroup; children = (B10000000000000000000006, B10000000000000000000007, B10000000000000000000008, ); path = Persistence; sourceTree = "<group>"; };
@@ -77,6 +83,8 @@
 		D20000000000000000000009 = {isa = PBXGroup; children = (B1000000000000000000000F, B10000000000000000000010, B10000000000000000000011, ); path = Config; sourceTree = "<group>"; };
 		D2000000000000000000000A = {isa = PBXGroup; children = (B10000000000000000000004, ); path = Resources; sourceTree = "<group>"; };
 		D2000000000000000000000B = {isa = PBXGroup; children = (B1000000000000000000000B, ); path = Tests; sourceTree = "<group>"; };
+		D2000000000000000000000C = {isa = PBXGroup; children = (B10000000000000000000017, ); path = Insights; sourceTree = "<group>"; };
+		D2000000000000000000000D = {isa = PBXGroup; children = (B10000000000000000000018, ); path = Meals; sourceTree = "<group>"; };
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -96,7 +104,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		F30000000000000000000001 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000001, A10000000000000000000002, A10000000000000000000003, ); runOnlyForDeploymentPostprocessing = 0; };
+		F30000000000000000000001 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000001, A10000000000000000000010, A10000000000000000000002, A10000000000000000000011, A10000000000000000000012, A10000000000000000000003, ); runOnlyForDeploymentPostprocessing = 0; };
 		F30000000000000000000002 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000009, A1000000000000000000000A, ); runOnlyForDeploymentPostprocessing = 0; };
 		F30000000000000000000003 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000005, A10000000000000000000006, A10000000000000000000007, A10000000000000000000008, ); runOnlyForDeploymentPostprocessing = 0; };
 		F30000000000000000000004 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A1000000000000000000000B, ); runOnlyForDeploymentPostprocessing = 0; };

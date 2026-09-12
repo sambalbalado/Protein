@@ -4,7 +4,8 @@ public enum PersistenceController {
     public static let schema = Schema([
         ProteinEntry.self,
         SavedMeal.self,
-        UserSettings.self
+        UserSettings.self,
+        ProteinGoalChange.self
     ])
 
     public static func makeShared() throws -> ModelContainer {

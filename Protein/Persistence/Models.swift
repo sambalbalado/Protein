@@ -61,6 +61,19 @@ public final class UserSettings {
     }
 }
 
+@Model
+public final class ProteinGoalChange {
+    @Attribute(.unique) public var id: UUID
+    public var grams: Double
+    public var effectiveAt: Date
+
+    public init(id: UUID = UUID(), grams: Double, effectiveAt: Date = .now) {
+        self.id = id
+        self.grams = grams
+        self.effectiveAt = effectiveAt
+    }
+}
+
 public enum ProteinEntryValidationError: LocalizedError, Equatable {
     case missingName, nonFiniteGrams, nonPositiveGrams, implausibleGrams
 
@@ -99,5 +112,48 @@ public struct DailyProteinSummary: Equatable, Sendable {
     public static func entries(for date: Date, in entries: [ProteinEntry], calendar: Calendar = .current) -> [ProteinEntry] {
         guard let interval = calendar.dateInterval(of: .day, for: date) else { return [] }
         return entries.filter { interval.contains($0.loggedAt) }
+    }
+}
+
+public struct ProteinDay: Equatable, Identifiable, Sendable {
+    public let date: Date
+    public let total: Double
+    public let goal: Double
+    public let entryCount: Int
+    public var id: Date { date }
+    public var progress: Double { goal > 0 ? total / goal : 0 }
+    public var hasData: Bool { entryCount > 0 }
+
+    public init(date: Date, total: Double, goal: Double, entryCount: Int) {
+        self.date = date
+        self.total = total
+        self.goal = goal
+        self.entryCount = entryCount
+    }
+}
+
+public enum ProteinInsights {
+    public static func days(
+        from start: Date,
+        through end: Date,
+        entries: [ProteinEntry],
+        goalChanges: [ProteinGoalChange],
+        fallbackGoal: Double,
+        calendar: Calendar = .current
+    ) -> [ProteinDay] {
+        var result: [ProteinDay] = []
+        var day = calendar.startOfDay(for: start)
+        let last = calendar.startOfDay(for: end)
+        let orderedGoals = goalChanges.sorted { $0.effectiveAt < $1.effectiveAt }
+        let entriesByDay = Dictionary(grouping: entries) { calendar.startOfDay(for: $0.loggedAt) }
+
+        while day <= last {
+            guard let next = calendar.date(byAdding: .day, value: 1, to: day) else { break }
+            let dayEntries = entriesByDay[day] ?? []
+            let goal = orderedGoals.last(where: { $0.effectiveAt < next })?.grams ?? fallbackGoal
+            result.append(ProteinDay(date: day, total: dayEntries.reduce(0) { $0 + $1.grams }, goal: goal, entryCount: dayEntries.count))
+            day = next
+        }
+        return result
     }
 }
