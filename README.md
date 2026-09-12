@@ -1,16 +1,20 @@
 # Protein
 
-Protein is a minimalist, native iPhone app for tracking daily protein. The one-week MVP will support fast manual entries, reusable meals, seven-day history, AI-assisted estimates from meal photos, and an interactive Home Screen widget.
+Protein is a premium-feeling minimalist, native iPhone app for tracking daily protein and body-weight progress. The roadmap covers fast manual entries, reusable meals, weekly and monthly insights, AI-assisted estimates from meal photos, an interactive Home Screen widget, personalized onboarding, and optional account creation.
 
 ## Status
 
-Day 1 foundation is implemented: the app, widget extension, shared persistence module, design system, dashboard shell, and unit-test target are ready for feature work.
+Day 1 foundation is implemented. Day 2 manual protein logging is next.
 
 ## Product principles
 
 - Protein only: calories and other macros are deliberately out of scope.
 - Manual logging must remain fast and work offline.
+- The interface should feel modern and expensive through restraint, typography, spacing, and polish rather than clutter.
 - Photo analysis produces an editable estimate, never an unquestioned fact.
+- Suggested protein goals must be transparent, editable guidance rather than medical certainty.
+- Height and weight are sensitive profile data and must remain private.
+- Account creation is optional and must not weaken guest or offline use.
 - Meal photos are not retained by default.
 - AI credentials must never be embedded in the public app or committed to Git.
 - The app and source code are free to use under the MIT License.
@@ -24,16 +28,21 @@ Day 1 foundation is implemented: the app, widget extension, shared persistence m
 - A provider-neutral `MealAnalysisService`
 - A configurable secure proxy for live image analysis
 - Shared App Group storage for app/widget synchronization
+- Local profile and dated weight models behind repository boundaries
+- Protocol-driven authentication with session material stored in Keychain
 
-## One-week roadmap
+## Roadmap
 
 1. Scaffold the app, widget, persistence layer, and design system.
 2. Build manual protein logging and daily-goal tracking.
-3. Add history, charts, and reusable meals.
+3. Add weekly history, a monthly goal calendar, and reusable meals.
 4. Define and test the AI meal-analysis boundary.
 5. Connect camera/photos to live, editable AI estimates.
 6. Build the interactive protein widget.
-7. Polish, test, document, and install on a physical iPhone.
+7. Apply premium visual polish, test, document, and install on a physical iPhone.
+8. Add first-launch height/weight onboarding and an editable suggested protein goal.
+9. Add private dated weight tracking and an accessible progress graph.
+10. Add secure optional account creation without uploading local health-related data.
 
 The detailed roadmap, acceptance criteria, and daily prompts live in the Protein page in Notion.
 
