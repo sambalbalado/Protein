@@ -3,7 +3,7 @@
 The authoritative tracker is the **Protein Tasks** database in Notion. This file is a compact offline index.
 
 - [x] Day 1 — Scaffold the app and design system (`8835f71`)
-- [ ] Day 2 — Build manual protein logging
+- [x] Day 2 — Build manual protein logging
 - [ ] Day 3 — Add history, calendar insights, and reusable meals
 - [ ] Day 4 — Define and test the AI meal-analysis boundary
 - [ ] Day 5 — Connect meal photos to live AI estimation

@@ -5,6 +5,7 @@ import SwiftData
 public protocol ProteinRepository: AnyObject {
     func entries(from start: Date, to end: Date) throws -> [ProteinEntry]
     func add(_ entry: ProteinEntry) throws
+    func save() throws
     func delete(_ entry: ProteinEntry) throws
     func savedMeals() throws -> [SavedMeal]
     func settings() throws -> UserSettings
@@ -31,6 +32,10 @@ public final class SwiftDataProteinRepository: ProteinRepository {
 
     public func add(_ entry: ProteinEntry) throws {
         context.insert(entry)
+        try context.save()
+    }
+
+    public func save() throws {
         try context.save()
     }
 

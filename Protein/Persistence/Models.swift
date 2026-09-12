@@ -60,3 +60,44 @@ public final class UserSettings {
         self.dailyProteinGoal = dailyProteinGoal
     }
 }
+
+public enum ProteinEntryValidationError: LocalizedError, Equatable {
+    case missingName, nonFiniteGrams, nonPositiveGrams, implausibleGrams
+
+    public var errorDescription: String? {
+        switch self {
+        case .missingName: "Add a food name."
+        case .nonFiniteGrams: "Enter a valid protein amount."
+        case .nonPositiveGrams: "Protein must be greater than 0 g."
+        case .implausibleGrams: "That amount looks unusually high. Enter 300 g or less per item."
+        }
+    }
+}
+
+public enum ProteinEntryValidator {
+    public static let maximumGrams = 300.0
+
+    public static func validate(name: String, grams: Double) throws {
+        guard !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { throw ProteinEntryValidationError.missingName }
+        guard grams.isFinite else { throw ProteinEntryValidationError.nonFiniteGrams }
+        guard grams > 0 else { throw ProteinEntryValidationError.nonPositiveGrams }
+        guard grams <= maximumGrams else { throw ProteinEntryValidationError.implausibleGrams }
+    }
+}
+
+public struct DailyProteinSummary: Equatable, Sendable {
+    public let total: Double
+    public let goal: Double
+    public var remaining: Double { max(goal - total, 0) }
+    public var progress: Double { goal > 0 ? total / goal : 0 }
+
+    public init(entries: [ProteinEntry], goal: Double) {
+        total = entries.reduce(0) { $0 + $1.grams }
+        self.goal = goal
+    }
+
+    public static func entries(for date: Date, in entries: [ProteinEntry], calendar: Calendar = .current) -> [ProteinEntry] {
+        guard let interval = calendar.dateInterval(of: .day, for: date) else { return [] }
+        return entries.filter { interval.contains($0.loggedAt) }
+    }
+}

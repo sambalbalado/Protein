@@ -4,7 +4,7 @@ Protein is a premium-feeling minimalist, native iPhone app for tracking daily pr
 
 ## Status
 
-Day 1 foundation is implemented. Day 2 manual protein logging is next.
+Day 2 adds offline manual logging, quick-add shortcuts, an editable daily goal, live derived totals, validation, and edit/delete controls.
 
 ## Product principles
 
