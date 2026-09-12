@@ -1,0 +1,134 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A10000000000000000000001 /* ProteinApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000001 /* ProteinApp.swift */; };
+		A10000000000000000000002 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000002 /* DashboardView.swift */; };
+		A10000000000000000000003 /* ProteinTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000003 /* ProteinTheme.swift */; };
+		A10000000000000000000004 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000004 /* Assets.xcassets */; };
+		A10000000000000000000005 /* AppGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000005 /* AppGroup.swift */; };
+		A10000000000000000000006 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000006 /* Models.swift */; };
+		A10000000000000000000007 /* PersistenceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000007 /* PersistenceController.swift */; };
+		A10000000000000000000008 /* ProteinRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000008 /* ProteinRepository.swift */; };
+		A10000000000000000000009 /* ProteinWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000009 /* ProteinWidget.swift */; };
+		A1000000000000000000000A /* ProteinWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000A /* ProteinWidgetBundle.swift */; };
+		A1000000000000000000000B /* ProteinPersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000B /* ProteinPersistenceTests.swift */; };
+		A1000000000000000000000C /* ProteinCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B10000000000000000000015 /* ProteinCore.framework */; };
+		A1000000000000000000000D /* ProteinCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B10000000000000000000015 /* ProteinCore.framework */; };
+		A1000000000000000000000E /* ProteinCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B10000000000000000000015 /* ProteinCore.framework */; };
+		A1000000000000000000000F /* ProteinWidget.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = B10000000000000000000014 /* ProteinWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		C10000000000000000000001 = {isa = PBXContainerItemProxy; containerPortal = D10000000000000000000001 /* Project object */; proxyType = 1; remoteGlobalIDString = E10000000000000000000003; remoteInfo = ProteinCore; };
+		C10000000000000000000002 = {isa = PBXContainerItemProxy; containerPortal = D10000000000000000000001 /* Project object */; proxyType = 1; remoteGlobalIDString = E10000000000000000000002; remoteInfo = ProteinWidget; };
+		C10000000000000000000003 = {isa = PBXContainerItemProxy; containerPortal = D10000000000000000000001 /* Project object */; proxyType = 1; remoteGlobalIDString = E10000000000000000000003; remoteInfo = ProteinCore; };
+		C10000000000000000000004 = {isa = PBXContainerItemProxy; containerPortal = D10000000000000000000001 /* Project object */; proxyType = 1; remoteGlobalIDString = E10000000000000000000003; remoteInfo = ProteinCore; };
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		F10000000000000000000001 = {isa = PBXCopyFilesBuildPhase; buildActionMask = 2147483647; dstPath = ""; dstSubfolderSpec = 13; files = (A1000000000000000000000F /* ProteinWidget.appex in Embed App Extensions */, ); name = "Embed App Extensions"; runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		B10000000000000000000001 /* ProteinApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProteinApp.swift; sourceTree = "<group>"; };
+		B10000000000000000000002 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+		B10000000000000000000003 /* ProteinTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProteinTheme.swift; sourceTree = "<group>"; };
+		B10000000000000000000004 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B10000000000000000000005 /* AppGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppGroup.swift; sourceTree = "<group>"; };
+		B10000000000000000000006 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		B10000000000000000000007 /* PersistenceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceController.swift; sourceTree = "<group>"; };
+		B10000000000000000000008 /* ProteinRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProteinRepository.swift; sourceTree = "<group>"; };
+		B10000000000000000000009 /* ProteinWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProteinWidget.swift; sourceTree = "<group>"; };
+		B1000000000000000000000A /* ProteinWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProteinWidgetBundle.swift; sourceTree = "<group>"; };
+		B1000000000000000000000B /* ProteinPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProteinPersistenceTests.swift; sourceTree = "<group>"; };
+		B1000000000000000000000C /* Protein.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Protein.entitlements; sourceTree = "<group>"; };
+		B1000000000000000000000D /* ProteinWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ProteinWidget.entitlements; sourceTree = "<group>"; };
+		B1000000000000000000000E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B1000000000000000000000F /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
+		B10000000000000000000010 /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
+		B10000000000000000000011 /* Shared.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Shared.xcconfig; sourceTree = "<group>"; };
+		B10000000000000000000012 /* Protein.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Protein.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B10000000000000000000013 /* ProteinTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ProteinTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B10000000000000000000014 /* ProteinWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ProteinWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		B10000000000000000000015 /* ProteinCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ProteinCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		F20000000000000000000001 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (A1000000000000000000000C, ); runOnlyForDeploymentPostprocessing = 0; };
+		F20000000000000000000002 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (A1000000000000000000000D, ); runOnlyForDeploymentPostprocessing = 0; };
+		F20000000000000000000003 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		F20000000000000000000004 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (A1000000000000000000000E, ); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		D20000000000000000000001 = {isa = PBXGroup; children = (D20000000000000000000002, D20000000000000000000009, D20000000000000000000008, ); sourceTree = "<group>"; };
+		D20000000000000000000002 = {isa = PBXGroup; children = (D20000000000000000000003, D20000000000000000000004, D20000000000000000000005, D20000000000000000000006, D20000000000000000000007, D2000000000000000000000A, D2000000000000000000000B, ); path = Protein; sourceTree = "<group>"; };
+		D20000000000000000000003 = {isa = PBXGroup; children = (B10000000000000000000001, B10000000000000000000005, B1000000000000000000000C, ); path = App; sourceTree = "<group>"; };
+		D20000000000000000000004 = {isa = PBXGroup; children = (B10000000000000000000002, ); path = Dashboard; sourceTree = "<group>"; };
+		D20000000000000000000005 = {isa = PBXGroup; children = (B10000000000000000000003, ); path = DesignSystem; sourceTree = "<group>"; };
+		D20000000000000000000006 = {isa = PBXGroup; children = (B10000000000000000000006, B10000000000000000000007, B10000000000000000000008, ); path = Persistence; sourceTree = "<group>"; };
+		D20000000000000000000007 = {isa = PBXGroup; children = (B10000000000000000000009, B1000000000000000000000A, B1000000000000000000000D, B1000000000000000000000E, ); path = Widget; sourceTree = "<group>"; };
+		D20000000000000000000008 = {isa = PBXGroup; children = (B10000000000000000000012, B10000000000000000000014, B10000000000000000000015, B10000000000000000000013, ); name = Products; sourceTree = "<group>"; };
+		D20000000000000000000009 = {isa = PBXGroup; children = (B1000000000000000000000F, B10000000000000000000010, B10000000000000000000011, ); path = Config; sourceTree = "<group>"; };
+		D2000000000000000000000A = {isa = PBXGroup; children = (B10000000000000000000004, ); path = Resources; sourceTree = "<group>"; };
+		D2000000000000000000000B = {isa = PBXGroup; children = (B1000000000000000000000B, ); path = Tests; sourceTree = "<group>"; };
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		E10000000000000000000001 = {isa = PBXNativeTarget; buildConfigurationList = E30000000000000000000001; buildPhases = (F30000000000000000000001, F20000000000000000000001, F40000000000000000000001, F10000000000000000000001, ); buildRules = (); dependencies = (E20000000000000000000001, E20000000000000000000002, ); name = Protein; productName = Protein; productReference = B10000000000000000000012; productType = "com.apple.product-type.application"; };
+		E10000000000000000000002 = {isa = PBXNativeTarget; buildConfigurationList = E30000000000000000000002; buildPhases = (F30000000000000000000002, F20000000000000000000002, F40000000000000000000002, ); buildRules = (); dependencies = (E20000000000000000000003, ); name = ProteinWidget; productName = ProteinWidget; productReference = B10000000000000000000014; productType = "com.apple.product-type.app-extension"; };
+		E10000000000000000000003 = {isa = PBXNativeTarget; buildConfigurationList = E30000000000000000000003; buildPhases = (F30000000000000000000003, F20000000000000000000003, ); buildRules = (); dependencies = (); name = ProteinCore; productName = ProteinCore; productReference = B10000000000000000000015; productType = "com.apple.product-type.framework"; };
+		E10000000000000000000004 = {isa = PBXNativeTarget; buildConfigurationList = E30000000000000000000004; buildPhases = (F30000000000000000000004, F20000000000000000000004, ); buildRules = (); dependencies = (E20000000000000000000004, ); name = ProteinTests; productName = ProteinTests; productReference = B10000000000000000000013; productType = "com.apple.product-type.bundle.unit-test"; };
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		D10000000000000000000001 /* Project object */ = {isa = PBXProject; attributes = {BuildIndependentTargetsInParallel = YES; LastSwiftUpdateCheck = 2660; LastUpgradeCheck = 2660; TargetAttributes = {E10000000000000000000001 = {CreatedOnToolsVersion = 26.0; }; E10000000000000000000002 = {CreatedOnToolsVersion = 26.0; }; E10000000000000000000003 = {CreatedOnToolsVersion = 26.0; }; E10000000000000000000004 = {CreatedOnToolsVersion = 26.0; TestTargetID = E10000000000000000000001; }; }; }; buildConfigurationList = E30000000000000000000005; compatibilityVersion = "Xcode 16.0"; developmentRegion = en; hasScannedForEncodings = 0; knownRegions = (en, Base, ); mainGroup = D20000000000000000000001; productRefGroup = D20000000000000000000008; projectDirPath = ""; projectRoot = ""; targets = (E10000000000000000000001, E10000000000000000000002, E10000000000000000000003, E10000000000000000000004, ); };
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		F40000000000000000000001 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000004, ); runOnlyForDeploymentPostprocessing = 0; };
+		F40000000000000000000002 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		F30000000000000000000001 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000001, A10000000000000000000002, A10000000000000000000003, ); runOnlyForDeploymentPostprocessing = 0; };
+		F30000000000000000000002 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000009, A1000000000000000000000A, ); runOnlyForDeploymentPostprocessing = 0; };
+		F30000000000000000000003 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000005, A10000000000000000000006, A10000000000000000000007, A10000000000000000000008, ); runOnlyForDeploymentPostprocessing = 0; };
+		F30000000000000000000004 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A1000000000000000000000B, ); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		E20000000000000000000001 = {isa = PBXTargetDependency; target = E10000000000000000000003; targetProxy = C10000000000000000000001; };
+		E20000000000000000000002 = {isa = PBXTargetDependency; target = E10000000000000000000002; targetProxy = C10000000000000000000002; };
+		E20000000000000000000003 = {isa = PBXTargetDependency; target = E10000000000000000000003; targetProxy = C10000000000000000000003; };
+		E20000000000000000000004 = {isa = PBXTargetDependency; target = E10000000000000000000003; targetProxy = C10000000000000000000004; };
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		E40000000000000000000001 = {isa = XCBuildConfiguration; baseConfigurationReference = B1000000000000000000000F; buildSettings = {ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; CODE_SIGN_ENTITLEMENTS = Protein/App/Protein.entitlements; CURRENT_PROJECT_VERSION = 1; GENERATE_INFOPLIST_FILE = YES; INFOPLIST_KEY_CFBundleDisplayName = Protein; INFOPLIST_KEY_ProteinAppGroupIdentifier = "$(APP_GROUP_IDENTIFIER)"; INFOPLIST_KEY_UILaunchScreen_Generation = YES; INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES; LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks"; MARKETING_VERSION = 0.1.0; PRODUCT_BUNDLE_IDENTIFIER = com.example.Protein; PRODUCT_NAME = "$(TARGET_NAME)"; SDKROOT = iphoneos; SUPPORTED_PLATFORMS = "iphoneos iphonesimulator"; SUPPORTS_MACCATALYST = NO; SWIFT_EMIT_LOC_STRINGS = YES; TARGETED_DEVICE_FAMILY = 1; }; name = Debug; };
+		E40000000000000000000002 = {isa = XCBuildConfiguration; baseConfigurationReference = B10000000000000000000010; buildSettings = {ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; CODE_SIGN_ENTITLEMENTS = Protein/App/Protein.entitlements; CURRENT_PROJECT_VERSION = 1; GENERATE_INFOPLIST_FILE = YES; INFOPLIST_KEY_CFBundleDisplayName = Protein; INFOPLIST_KEY_ProteinAppGroupIdentifier = "$(APP_GROUP_IDENTIFIER)"; INFOPLIST_KEY_UILaunchScreen_Generation = YES; INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES; LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks"; MARKETING_VERSION = 0.1.0; PRODUCT_BUNDLE_IDENTIFIER = com.example.Protein; PRODUCT_NAME = "$(TARGET_NAME)"; SDKROOT = iphoneos; SUPPORTED_PLATFORMS = "iphoneos iphonesimulator"; SUPPORTS_MACCATALYST = NO; SWIFT_EMIT_LOC_STRINGS = YES; TARGETED_DEVICE_FAMILY = 1; }; name = Release; };
+		E40000000000000000000003 = {isa = XCBuildConfiguration; baseConfigurationReference = B1000000000000000000000F; buildSettings = {APPLICATION_EXTENSION_API_ONLY = YES; CODE_SIGN_ENTITLEMENTS = Protein/Widget/ProteinWidget.entitlements; CURRENT_PROJECT_VERSION = 1; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = Protein/Widget/Info.plist; LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks"; MARKETING_VERSION = 0.1.0; PRODUCT_BUNDLE_IDENTIFIER = com.example.Protein.Widget; PRODUCT_NAME = "$(TARGET_NAME)"; SDKROOT = iphoneos; SKIP_INSTALL = YES; SUPPORTED_PLATFORMS = "iphoneos iphonesimulator"; SUPPORTS_MACCATALYST = NO; TARGETED_DEVICE_FAMILY = 1; }; name = Debug; };
+		E40000000000000000000004 = {isa = XCBuildConfiguration; baseConfigurationReference = B10000000000000000000010; buildSettings = {APPLICATION_EXTENSION_API_ONLY = YES; CODE_SIGN_ENTITLEMENTS = Protein/Widget/ProteinWidget.entitlements; CURRENT_PROJECT_VERSION = 1; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = Protein/Widget/Info.plist; LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks"; MARKETING_VERSION = 0.1.0; PRODUCT_BUNDLE_IDENTIFIER = com.example.Protein.Widget; PRODUCT_NAME = "$(TARGET_NAME)"; SDKROOT = iphoneos; SKIP_INSTALL = YES; SUPPORTED_PLATFORMS = "iphoneos iphonesimulator"; SUPPORTS_MACCATALYST = NO; TARGETED_DEVICE_FAMILY = 1; }; name = Release; };
+		E40000000000000000000005 = {isa = XCBuildConfiguration; baseConfigurationReference = B1000000000000000000000F; buildSettings = {CODE_SIGNING_ALLOWED = NO; DEFINES_MODULE = YES; MACH_O_TYPE = staticlib; PRODUCT_BUNDLE_IDENTIFIER = com.example.Protein.Core; PRODUCT_MODULE_NAME = ProteinCore; PRODUCT_NAME = "$(TARGET_NAME)"; SDKROOT = iphoneos; SKIP_INSTALL = YES; SUPPORTED_PLATFORMS = "iphoneos iphonesimulator"; SUPPORTS_MACCATALYST = NO; TARGETED_DEVICE_FAMILY = 1; }; name = Debug; };
+		E40000000000000000000006 = {isa = XCBuildConfiguration; baseConfigurationReference = B10000000000000000000010; buildSettings = {CODE_SIGNING_ALLOWED = NO; DEFINES_MODULE = YES; MACH_O_TYPE = staticlib; PRODUCT_BUNDLE_IDENTIFIER = com.example.Protein.Core; PRODUCT_MODULE_NAME = ProteinCore; PRODUCT_NAME = "$(TARGET_NAME)"; SDKROOT = iphoneos; SKIP_INSTALL = YES; SUPPORTED_PLATFORMS = "iphoneos iphonesimulator"; SUPPORTS_MACCATALYST = NO; TARGETED_DEVICE_FAMILY = 1; }; name = Release; };
+		E40000000000000000000007 = {isa = XCBuildConfiguration; baseConfigurationReference = B1000000000000000000000F; buildSettings = {BUNDLE_LOADER = ""; GENERATE_INFOPLIST_FILE = YES; PRODUCT_BUNDLE_IDENTIFIER = com.example.Protein.Tests; PRODUCT_NAME = "$(TARGET_NAME)"; SDKROOT = iphoneos; SUPPORTED_PLATFORMS = "iphoneos iphonesimulator"; SUPPORTS_MACCATALYST = NO; SWIFT_VERSION = 6.0; TARGETED_DEVICE_FAMILY = 1; TEST_HOST = ""; }; name = Debug; };
+		E40000000000000000000008 = {isa = XCBuildConfiguration; baseConfigurationReference = B10000000000000000000010; buildSettings = {BUNDLE_LOADER = ""; GENERATE_INFOPLIST_FILE = YES; PRODUCT_BUNDLE_IDENTIFIER = com.example.Protein.Tests; PRODUCT_NAME = "$(TARGET_NAME)"; SDKROOT = iphoneos; SUPPORTED_PLATFORMS = "iphoneos iphonesimulator"; SUPPORTS_MACCATALYST = NO; SWIFT_VERSION = 6.0; TARGETED_DEVICE_FAMILY = 1; TEST_HOST = ""; }; name = Release; };
+		E40000000000000000000009 = {isa = XCBuildConfiguration; buildSettings = {CLANG_ENABLE_MODULES = YES; ENABLE_STRICT_OBJC_MSGSEND = YES; GCC_C_LANGUAGE_STANDARD = gnu17; SWIFT_VERSION = 6.0; }; name = Debug; };
+		E4000000000000000000000A = {isa = XCBuildConfiguration; buildSettings = {CLANG_ENABLE_MODULES = YES; ENABLE_STRICT_OBJC_MSGSEND = YES; GCC_C_LANGUAGE_STANDARD = gnu17; SWIFT_VERSION = 6.0; }; name = Release; };
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		E30000000000000000000001 = {isa = XCConfigurationList; buildConfigurations = (E40000000000000000000001, E40000000000000000000002, ); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		E30000000000000000000002 = {isa = XCConfigurationList; buildConfigurations = (E40000000000000000000003, E40000000000000000000004, ); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		E30000000000000000000003 = {isa = XCConfigurationList; buildConfigurations = (E40000000000000000000005, E40000000000000000000006, ); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		E30000000000000000000004 = {isa = XCConfigurationList; buildConfigurations = (E40000000000000000000007, E40000000000000000000008, ); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		E30000000000000000000005 = {isa = XCConfigurationList; buildConfigurations = (E40000000000000000000009, E4000000000000000000000A, ); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+/* End XCConfigurationList section */
+	};
+	rootObject = D10000000000000000000001 /* Project object */;
+}

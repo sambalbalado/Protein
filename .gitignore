@@ -5,6 +5,8 @@ build/
 xcuserdata/
 *.xccheckout
 *.moved-aside
+*.xcresult
+*.ipa
 
 # Swift Package Manager
 .build/
@@ -26,4 +28,3 @@ screenshots/private/
 
 # macOS
 .DS_Store
-

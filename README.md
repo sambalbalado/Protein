@@ -4,7 +4,7 @@ Protein is a minimalist, native iPhone app for tracking daily protein. The one-w
 
 ## Status
 
-Planning complete. Implementation begins with Day 1 in the Notion roadmap.
+Day 1 foundation is implemented: the app, widget extension, shared persistence module, design system, dashboard shell, and unit-test target are ready for feature work.
 
 ## Product principles
 
@@ -43,9 +43,43 @@ Do not put an AI provider key in the iOS target, source code, configuration comm
 
 ## Development
 
-Prerequisites are Xcode 26 or newer and an iPhone capable of running the deployment target selected on Day 1. Exact build, signing, App Group, proxy, and test instructions will be added as each feature is implemented.
+### Prerequisites
+
+- Xcode 26 or newer
+- An iOS 18 or newer simulator
+- A free or paid Apple development team for device installation
+
+### First run
+
+1. Open `Protein.xcodeproj` in Xcode.
+2. Select the **Protein** scheme and an iPhone simulator.
+3. Build and run. The starter dashboard intentionally shows an empty day.
+4. Run the **Protein** scheme's tests with Product → Test.
+
+The checked-in bundle IDs and App Group use the generic `com.example` namespace. Before installing on a physical device, change the app and widget bundle identifiers, set `APP_GROUP_IDENTIFIER` in `Config/Shared.xcconfig`, and register the same App Group capability for both targets.
+
+### Architecture
+
+- `Protein/App`: application entry point and shared App Group constants
+- `Protein/Dashboard`: the empty-state dashboard shell
+- `Protein/DesignSystem`: spacing, radii, semantic colors, cards, and buttons
+- `Protein/Persistence`: SwiftData models, container setup, and repository boundary
+- `Protein/Widget`: WidgetKit extension using the same App Group identifier
+- `Protein/Tests`: deterministic in-memory persistence tests
+- `Logging`, `History`, `Meals`, and `Analysis`: feature boundaries reserved for later roadmap days
+
+Views do not access SwiftData directly. `ProteinRepository` is the boundary for persistence operations, and `PersistenceController.makeInMemory()` supplies an isolated test store.
+
+### Local configuration and secrets
+
+Copy `Config/Secrets.xcconfig.example` to `Config/Secrets.xcconfig` only when local configuration is needed. The local file is ignored by Git. Never place an AI provider credential in the app, widget, repository, or application bundle; live analysis will call a configurable server-side proxy.
+
+### Command-line verification
+
+```sh
+xcodebuild -project Protein.xcodeproj -scheme Protein -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build test
+```
 
 ## License
 
 MIT
-
