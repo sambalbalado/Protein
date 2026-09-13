@@ -24,6 +24,10 @@
 		A10000000000000000000010 /* ProteinRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000016 /* ProteinRootView.swift */; };
 		A10000000000000000000011 /* InsightsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000017 /* InsightsView.swift */; };
 		A10000000000000000000012 /* SavedMealsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000018 /* SavedMealsView.swift */; };
+		A10000000000000000000013 /* MealAnalysisModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000019 /* MealAnalysisModels.swift */; };
+		A10000000000000000000014 /* MealAnalysisService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001A /* MealAnalysisService.swift */; };
+		A10000000000000000000015 /* MealAnalysisView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001B /* MealAnalysisView.swift */; };
+		A10000000000000000000016 /* MealAnalysisTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001C /* MealAnalysisTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -62,6 +66,10 @@
 		B10000000000000000000016 /* ProteinRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProteinRootView.swift; sourceTree = "<group>"; };
 		B10000000000000000000017 /* InsightsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsView.swift; sourceTree = "<group>"; };
 		B10000000000000000000018 /* SavedMealsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedMealsView.swift; sourceTree = "<group>"; };
+		B10000000000000000000019 /* MealAnalysisModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealAnalysisModels.swift; sourceTree = "<group>"; };
+		B1000000000000000000001A /* MealAnalysisService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealAnalysisService.swift; sourceTree = "<group>"; };
+		B1000000000000000000001B /* MealAnalysisView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealAnalysisView.swift; sourceTree = "<group>"; };
+		B1000000000000000000001C /* MealAnalysisTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealAnalysisTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -73,7 +81,7 @@
 
 /* Begin PBXGroup section */
 		D20000000000000000000001 = {isa = PBXGroup; children = (D20000000000000000000002, D20000000000000000000009, D20000000000000000000008, ); sourceTree = "<group>"; };
-		D20000000000000000000002 = {isa = PBXGroup; children = (D20000000000000000000003, D20000000000000000000004, D2000000000000000000000C, D2000000000000000000000D, D20000000000000000000005, D20000000000000000000006, D20000000000000000000007, D2000000000000000000000A, D2000000000000000000000B, ); path = Protein; sourceTree = "<group>"; };
+		D20000000000000000000002 = {isa = PBXGroup; children = (D20000000000000000000003, D20000000000000000000004, D2000000000000000000000C, D2000000000000000000000D, D2000000000000000000000E, D20000000000000000000005, D20000000000000000000006, D20000000000000000000007, D2000000000000000000000A, D2000000000000000000000B, ); path = Protein; sourceTree = "<group>"; };
 		D20000000000000000000003 = {isa = PBXGroup; children = (B10000000000000000000001, B10000000000000000000016, B10000000000000000000005, B1000000000000000000000C, ); path = App; sourceTree = "<group>"; };
 		D20000000000000000000004 = {isa = PBXGroup; children = (B10000000000000000000002, ); path = Dashboard; sourceTree = "<group>"; };
 		D20000000000000000000005 = {isa = PBXGroup; children = (B10000000000000000000003, ); path = DesignSystem; sourceTree = "<group>"; };
@@ -82,9 +90,10 @@
 		D20000000000000000000008 = {isa = PBXGroup; children = (B10000000000000000000012, B10000000000000000000014, B10000000000000000000015, B10000000000000000000013, ); name = Products; sourceTree = "<group>"; };
 		D20000000000000000000009 = {isa = PBXGroup; children = (B1000000000000000000000F, B10000000000000000000010, B10000000000000000000011, ); path = Config; sourceTree = "<group>"; };
 		D2000000000000000000000A = {isa = PBXGroup; children = (B10000000000000000000004, ); path = Resources; sourceTree = "<group>"; };
-		D2000000000000000000000B = {isa = PBXGroup; children = (B1000000000000000000000B, ); path = Tests; sourceTree = "<group>"; };
+		D2000000000000000000000B = {isa = PBXGroup; children = (B1000000000000000000000B, B1000000000000000000001C, ); path = Tests; sourceTree = "<group>"; };
 		D2000000000000000000000C = {isa = PBXGroup; children = (B10000000000000000000017, ); path = Insights; sourceTree = "<group>"; };
 		D2000000000000000000000D = {isa = PBXGroup; children = (B10000000000000000000018, ); path = Meals; sourceTree = "<group>"; };
+		D2000000000000000000000E = {isa = PBXGroup; children = (B10000000000000000000019, B1000000000000000000001A, B1000000000000000000001B, ); path = Analysis; sourceTree = "<group>"; };
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -104,10 +113,10 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		F30000000000000000000001 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000001, A10000000000000000000010, A10000000000000000000002, A10000000000000000000011, A10000000000000000000012, A10000000000000000000003, ); runOnlyForDeploymentPostprocessing = 0; };
+		F30000000000000000000001 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000001, A10000000000000000000010, A10000000000000000000002, A10000000000000000000011, A10000000000000000000012, A10000000000000000000015, A10000000000000000000003, ); runOnlyForDeploymentPostprocessing = 0; };
 		F30000000000000000000002 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000009, A1000000000000000000000A, ); runOnlyForDeploymentPostprocessing = 0; };
-		F30000000000000000000003 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000005, A10000000000000000000006, A10000000000000000000007, A10000000000000000000008, ); runOnlyForDeploymentPostprocessing = 0; };
-		F30000000000000000000004 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A1000000000000000000000B, ); runOnlyForDeploymentPostprocessing = 0; };
+		F30000000000000000000003 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000005, A10000000000000000000006, A10000000000000000000007, A10000000000000000000008, A10000000000000000000013, A10000000000000000000014, ); runOnlyForDeploymentPostprocessing = 0; };
+		F30000000000000000000004 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A1000000000000000000000B, A10000000000000000000016, ); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */

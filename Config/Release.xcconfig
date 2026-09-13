@@ -1,2 +1,3 @@
 #include "Shared.xcconfig"
+#include? "Secrets.xcconfig"
 SWIFT_COMPILATION_MODE = wholemodule

@@ -4,7 +4,7 @@ Protein is a premium-feeling minimalist, native iPhone app for tracking daily pr
 
 ## Status
 
-Day 3 adds seven-day charts, a goal-aware monthly calendar, day inspection, reusable meals, and repeat-entry shortcuts while preserving offline-first storage.
+Day 4 defines a provider-neutral, fully mocked meal-analysis contract with strict validation, explicit review-before-save, editable estimates, secure external configuration, and documented privacy threats.
 
 ## Product principles
 
@@ -77,7 +77,7 @@ The checked-in bundle IDs and App Group use the generic `com.example` namespace.
 - `Protein/Persistence`: SwiftData models, container setup, and repository boundary
 - `Protein/Widget`: WidgetKit extension using the same App Group identifier
 - `Protein/Tests`: deterministic in-memory persistence tests
-- `Analysis`: feature boundary reserved for the AI roadmap days
+- `Protein/Analysis`: provider-neutral models, validation, deterministic fixtures, and editable estimate review
 
 Domain calculations and mutations stay behind `ProteinRepository` and testable core types. SwiftUI uses live SwiftData queries where immediate screen updates matter, while insights fetch only the visible week/month window. `PersistenceController.makeInMemory()` supplies an isolated test store.
 

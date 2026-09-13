@@ -1,4 +1,5 @@
 #include "Shared.xcconfig"
+#include? "Secrets.xcconfig"
 SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG
 SWIFT_OPTIMIZATION_LEVEL = -Onone
 ENABLE_TESTABILITY = YES
