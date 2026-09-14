@@ -4,7 +4,7 @@ Protein is a premium-feeling minimalist, native iPhone app for tracking daily pr
 
 ## Status
 
-Day 4 defines a provider-neutral, fully mocked meal-analysis contract with strict validation, explicit review-before-save, editable estimates, secure external configuration, and documented privacy threats.
+Day 5 connects the provider-neutral analysis boundary to native camera and Photos flows, metadata-minimized uploads, a configurable HTTPS proxy, recoverable errors, and the same explicit edit-before-save review.
 
 ## Product principles
 
@@ -78,12 +78,21 @@ The checked-in bundle IDs and App Group use the generic `com.example` namespace.
 - `Protein/Widget`: WidgetKit extension using the same App Group identifier
 - `Protein/Tests`: deterministic in-memory persistence tests
 - `Protein/Analysis`: provider-neutral models, validation, deterministic fixtures, and editable estimate review
+- `Server`: optional Cloudflare Worker proxy example; the provider credential exists only in server-side environment variables
 
 Domain calculations and mutations stay behind `ProteinRepository` and testable core types. SwiftUI uses live SwiftData queries where immediate screen updates matter, while insights fetch only the visible week/month window. `PersistenceController.makeInMemory()` supplies an isolated test store.
 
 ### Local configuration and secrets
 
-Copy `Config/Secrets.xcconfig.example` to `Config/Secrets.xcconfig` only when local configuration is needed. The local file is ignored by Git. Never place an AI provider credential in the app, widget, repository, or application bundle; live analysis will call a configurable server-side proxy.
+Copy `Config/Secrets.xcconfig.example` to `Config/Secrets.xcconfig` only when local configuration is needed. The local file is ignored by Git. Set `PROTEIN_PROXY_BASE_URL` to the deployed HTTPS proxy origin. Never place an AI provider credential in the app, widget, repository, or application bundle.
+
+### Photo estimation setup and limits
+
+The Estimate tab uses Apple's system Photos picker or the camera. Protein redraws the selected image at no more than 1,600 pixels on its longest edge, converts it to a metadata-minimized JPEG under 2 MB, and sends only that temporary copy to `POST /v1/meal-analysis`. It does not save the photo to SwiftData, the photo library, or application storage. A failed request may remain in memory only long enough for the user to tap Retry; success, replacement, discard, or leaving the screen clears it.
+
+The example proxy lives in `Server`; follow `Server/README.md` to configure it. It uses the [OpenAI Responses API](https://developers.openai.com/api/reference/cli/resources/responses/methods/create), which supports image inputs and structured JSON outputs. Provider use has a real cost and provider-side data handling depends on the selected account and model. Run a live smoke test only with an explicitly authorized photo and after reviewing current pricing.
+
+Photo-derived foods, portions, confidence values, and protein grams are estimates based on what is visible. Hidden ingredients and uncertain portion sizes can materially change the result. The app validates every response, highlights low confidence, and saves nothing until the user reviews, edits, and confirms it. Physical camera hardware and permission behavior must still be checked on an iPhone.
 
 ### Command-line verification
 

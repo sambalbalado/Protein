@@ -8,9 +8,16 @@ struct ProteinRootView: View {
             Tab("Insights", systemImage: "chart.bar.xaxis") { InsightsView() }
             Tab("Meals", systemImage: "bookmark") { SavedMealsView() }
             Tab("Estimate", systemImage: "camera.viewfinder") {
-                MealAnalysisView(service: MockMealAnalysisService(fixture: .success, delay: .milliseconds(500)))
+                MealAnalysisView(service: Self.mealAnalysisService())
             }
         }
         .tint(ProteinTheme.Color.accent)
+    }
+
+    private static func mealAnalysisService() -> any MealAnalysisService {
+        guard let configuration = try? MealAnalysisConfiguration.from() else {
+            return UnavailableMealAnalysisService()
+        }
+        return ProxyMealAnalysisService(configuration: configuration)
     }
 }

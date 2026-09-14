@@ -18,6 +18,9 @@ Package.resolved
 .env.*
 !.env.example
 Secrets.xcconfig
+.dev.vars
+.wrangler/
+Server/node_modules/
 *.p8
 *.p12
 *.mobileprovision

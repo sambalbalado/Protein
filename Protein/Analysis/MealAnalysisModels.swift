@@ -9,7 +9,7 @@ public struct MealImageRequest: Equatable, Sendable {
         self.mimeType = mimeType
     }
 
-    public func validated(maxByteCount: Int = 10_000_000) throws -> Self {
+    public func validated(maxByteCount: Int = 2_000_000) throws -> Self {
         guard !imageData.isEmpty,
               imageData.count <= maxByteCount,
               ["image/jpeg", "image/heic"].contains(mimeType.lowercased()) else {

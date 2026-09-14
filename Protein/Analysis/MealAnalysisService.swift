@@ -4,11 +4,21 @@ public protocol MealAnalysisService: Sendable {
     func analyze(_ request: MealImageRequest) async throws -> MealAnalysisResult
 }
 
+public struct UnavailableMealAnalysisService: MealAnalysisService {
+    public init() {}
+
+    public func analyze(_ request: MealImageRequest) async throws -> MealAnalysisResult {
+        _ = try request.validated(maxByteCount: ProxyMealAnalysisService.maximumUploadByteCount)
+        throw MealAnalysisError.configurationMissing
+    }
+}
+
 public enum MealAnalysisError: LocalizedError, Equatable, Sendable {
     case noNetwork
     case timedOut
     case refused(String)
     case invalidResponse(String)
+    case serviceUnavailable
     case configurationMissing
     case cancelled
     case invalidImage
@@ -19,9 +29,10 @@ public enum MealAnalysisError: LocalizedError, Equatable, Sendable {
         case .timedOut: "Analysis took too long. Try again when your connection is stable."
         case .refused(let reason): reason
         case .invalidResponse: "The estimate could not be verified, so nothing was saved. Try another photo or log manually."
-        case .configurationMissing: "Photo analysis is not configured in this build."
+        case .serviceUnavailable: "Photo analysis is temporarily unavailable. Try again, or log protein manually."
+        case .configurationMissing: "Photo analysis is not configured in this build. Add your secure proxy URL in Secrets.xcconfig."
         case .cancelled: "Analysis was cancelled."
-        case .invalidImage: "Choose a valid JPEG or HEIC image under 10 MB."
+        case .invalidImage: "Choose a valid meal photo. Protein prepares a metadata-minimized JPEG under 2 MB before upload."
         }
     }
 }
@@ -38,7 +49,11 @@ public struct MealAnalysisConfiguration: Equatable, Sendable {
     public let baseURL: URL
 
     public init(baseURL: URL) throws {
-        guard baseURL.scheme == "https", baseURL.host != nil, baseURL.user == nil, baseURL.password == nil else {
+        guard baseURL.scheme == "https",
+              let host = baseURL.host,
+              !host.hasSuffix(".invalid"),
+              baseURL.user == nil,
+              baseURL.password == nil else {
             throw MealAnalysisError.configurationMissing
         }
         self.baseURL = baseURL

@@ -3,4 +3,3 @@ SWIFT_VERSION = 6.0
 APP_GROUP_IDENTIFIER = group.com.example.Protein
 CODE_SIGN_STYLE = Automatic
 PROTEIN_PROXY_BASE_URL = https:/$()/example.invalid
-INFOPLIST_KEY_ProteinAnalysisServiceURL = $(PROTEIN_PROXY_BASE_URL)

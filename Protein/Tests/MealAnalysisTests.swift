@@ -1,4 +1,6 @@
 import Foundation
+import ImageIO
+import UIKit
 import XCTest
 @testable import ProteinCore
 
@@ -76,6 +78,7 @@ final class MealAnalysisTests: XCTestCase {
 
     func testConfigurationRequiresSecureExternalURL() throws {
         XCTAssertThrowsError(try MealAnalysisConfiguration(baseURL: URL(string: "http://example.com")!))
+        XCTAssertThrowsError(try MealAnalysisConfiguration(baseURL: URL(string: "https://example.invalid")!))
         XCTAssertNoThrow(try MealAnalysisConfiguration(baseURL: URL(string: "https://proxy.example.com")!))
     }
 
@@ -86,8 +89,119 @@ final class MealAnalysisTests: XCTestCase {
         XCTAssertNoThrow(try request.validated())
     }
 
+    func testImagePreprocessingBoundsDimensionsBytesAndMetadata() throws {
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 1
+        let image = UIGraphicsImageRenderer(size: CGSize(width: 3_200, height: 2_000), format: format).image { context in
+            UIColor.systemGreen.setFill()
+            context.fill(CGRect(x: 0, y: 0, width: 3_200, height: 2_000))
+        }
+
+        let prepared = try MealImagePreprocessor.prepare(image)
+        let source = CGImageSourceCreateWithData(prepared.imageData as CFData, nil)
+        let properties = source.flatMap { CGImageSourceCopyPropertiesAtIndex($0, 0, nil) as? [CFString: Any] }
+        let width = properties?[kCGImagePropertyPixelWidth] as? CGFloat
+        let height = properties?[kCGImagePropertyPixelHeight] as? CGFloat
+
+        XCTAssertEqual(prepared.mimeType, "image/jpeg")
+        XCTAssertLessThanOrEqual(prepared.imageData.count, MealImagePreprocessor.maximumByteCount)
+        XCTAssertLessThanOrEqual(max(width ?? .infinity, height ?? .infinity), MealImagePreprocessor.maximumDimension)
+        XCTAssertNil(properties?[kCGImagePropertyGPSDictionary])
+    }
+
+    func testProxyBuildsBoundedMultipartRequestAndDecodesValidatedResult() async throws {
+        let response = """
+        {"foods":[{"id":"0F4A2D7B-54AA-49F2-8EB9-BF07A6C8FD05","name":"Chicken","assumedPortion":"One breast","proteinGrams":38,"confidence":0.88}],"totalProteinGrams":38,"warnings":["Estimated portion"]}
+        """.data(using: .utf8)!
+        let transport = StubTransport(data: response, statusCode: 200)
+        let service = ProxyMealAnalysisService(
+            configuration: try MealAnalysisConfiguration(baseURL: URL(string: "https://proxy.example.com")!),
+            transport: transport
+        )
+
+        let result = try await service.analyze(request)
+        let sentRequest = await transport.receivedRequest
+        let body = String(decoding: sentRequest?.httpBody ?? Data(), as: UTF8.self)
+
+        XCTAssertEqual(result.totalProteinGrams, 38)
+        XCTAssertEqual(sentRequest?.url?.absoluteString, "https://proxy.example.com/v1/meal-analysis")
+        XCTAssertEqual(sentRequest?.httpMethod, "POST")
+        XCTAssertEqual(sentRequest?.timeoutInterval, ProxyMealAnalysisService.requestTimeout)
+        XCTAssertTrue(sentRequest?.value(forHTTPHeaderField: "Content-Type")?.hasPrefix("multipart/form-data; boundary=") == true)
+        XCTAssertTrue(body.contains("name=\"response_version\""))
+        XCTAssertTrue(body.contains("name=\"image\"; filename=\"meal.jpg\""))
+    }
+
+    func testProxyMapsRecoverableHTTPAndNetworkErrors() async throws {
+        let configuration = try MealAnalysisConfiguration(baseURL: URL(string: "https://proxy.example.com")!)
+        await assertProxy(StubTransport(data: Data(), statusCode: 504), configuration: configuration, equals: .timedOut)
+        await assertProxy(StubTransport(data: Data(), statusCode: 500), configuration: configuration, equals: .serviceUnavailable)
+        await assertProxy(
+            StubTransport(data: Data("{\"code\":\"refused\",\"message\":\"No meal was visible.\"}".utf8), statusCode: 422),
+            configuration: configuration,
+            equals: .refused("No meal was visible.")
+        )
+        await assertProxy(FailingTransport(code: .notConnectedToInternet), configuration: configuration, equals: .noNetwork)
+        await assertProxy(FailingTransport(code: .timedOut), configuration: configuration, equals: .timedOut)
+    }
+
+    func testProxyRejectsMalformedSuccessfulPayload() async throws {
+        let service = ProxyMealAnalysisService(
+            configuration: try MealAnalysisConfiguration(baseURL: URL(string: "https://proxy.example.com")!),
+            transport: StubTransport(data: Data("{\"foods\":[]}".utf8), statusCode: 200)
+        )
+        do {
+            _ = try await service.analyze(request)
+            XCTFail("Malformed success response was accepted")
+        } catch {
+            guard case .invalidResponse = error as? MealAnalysisError else {
+                return XCTFail("Expected invalid response, got \(error)")
+            }
+        }
+    }
+
     private func assertFixture(_ fixture: MockMealAnalysisService.Fixture, equals expected: MealAnalysisError) async {
         do { _ = try await MockMealAnalysisService(fixture: fixture).analyze(request); XCTFail("Expected \(expected)") }
         catch { XCTAssertEqual(error as? MealAnalysisError, expected) }
+    }
+
+    private func assertProxy(
+        _ transport: any MealAnalysisTransport,
+        configuration: MealAnalysisConfiguration,
+        equals expected: MealAnalysisError
+    ) async {
+        do {
+            _ = try await ProxyMealAnalysisService(configuration: configuration, transport: transport).analyze(request)
+            XCTFail("Expected \(expected)")
+        } catch {
+            XCTAssertEqual(error as? MealAnalysisError, expected)
+        }
+    }
+}
+
+private actor StubTransport: MealAnalysisTransport {
+    let data: Data
+    let statusCode: Int
+    private(set) var receivedRequest: URLRequest?
+
+    init(data: Data, statusCode: Int) {
+        self.data = data
+        self.statusCode = statusCode
+    }
+
+    func data(for request: URLRequest) async throws -> (Data, URLResponse) {
+        receivedRequest = request
+        return (
+            data,
+            HTTPURLResponse(url: request.url!, statusCode: statusCode, httpVersion: "HTTP/1.1", headerFields: nil)!
+        )
+    }
+}
+
+private struct FailingTransport: MealAnalysisTransport {
+    let code: URLError.Code
+
+    func data(for request: URLRequest) async throws -> (Data, URLResponse) {
+        throw URLError(code)
     }
 }

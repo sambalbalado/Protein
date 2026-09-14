@@ -2,15 +2,15 @@
 
 Protein treats photo analysis as an untrusted estimate. The iOS app sends image bytes only after the user chooses a photo, receives structured JSON through `MealAnalysisService`, validates the entire response, and presents an editable draft. Nothing enters SwiftData until the user presses **Confirm and save**.
 
-Day 4 uses `MockMealAnalysisService` only. It performs no network request and requires no credential.
+Day 4 introduced `MockMealAnalysisService`. Day 5 adds `ProxyMealAnalysisService`, which sends a bounded multipart request through an ephemeral URL session and validates the complete response before returning it to the editable review screen.
 
 ## Client configuration
 
-The future proxy base URL is supplied through the `ProteinAnalysisServiceURL` Info.plist value backed by `PROTEIN_PROXY_BASE_URL` in xcconfig. Local overrides belong in ignored `Config/Secrets.xcconfig`. Provider credentials must exist only on the server and must never be added to the app bundle.
+The proxy base URL is supplied through the `ProteinAnalysisServiceURL` Info.plist value backed by `PROTEIN_PROXY_BASE_URL` in xcconfig. Local overrides belong in ignored `Config/Secrets.xcconfig`. The checked-in `.invalid` placeholder deliberately fails configuration validation. Provider credentials must exist only on the server and must never be added to the app bundle.
 
 ## Proposed proxy contract
 
-`POST /v1/meal-analysis` with an authenticated, rate-limited multipart request:
+`POST /v1/meal-analysis` with a multipart request. The included personal-use Worker example enforces transport and response validation; any publicly reachable production deployment must additionally add gateway authentication and rate limits:
 
 - `image`: JPEG or HEIC bytes with a strict server-side size limit
 - `response_version`: `1`
@@ -47,3 +47,7 @@ Errors map to stable client states: no network, timeout, refusal, malformed resp
 - **Replay and abuse:** the proxy applies short-lived authorization, rate limits, request-size limits, and abuse controls.
 - **Transport interception:** production configuration requires HTTPS and rejects embedded URL credentials.
 - **Partial writes:** all reviewed food entries are validated first and saved as one repository operation.
+
+## Image lifecycle
+
+Camera and library images are redrawn to remove source metadata and orientation, bounded to 1,600 pixels on the longest side, JPEG-compressed below 2 MB, and held only in memory. The client uses an ephemeral URL session with caches and cookies disabled. Successful analysis, choosing a replacement, discarding the estimate, or leaving the screen clears the prepared bytes. A failed request may remain in memory only for an explicit retry; it is never written to the app's data store.
