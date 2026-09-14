@@ -13,7 +13,10 @@ struct SavedMealsView: View {
         NavigationStack {
             Group {
                 if meals.isEmpty { ContentUnavailableView("No saved meals", systemImage: "bookmark", description: Text("Save a common meal to log it again in one tap.")) }
-                else { List(meals) { meal in row(meal) } }
+                else {
+                    List(meals) { meal in row(meal) }
+                        .listStyle(.insetGrouped)
+                }
             }
             .navigationTitle("Saved meals")
             .toolbar { Button("New meal", systemImage: "plus") { editor = .new } }
@@ -26,8 +29,28 @@ struct SavedMealsView: View {
     }
 
     private func row(_ meal: SavedMeal) -> some View {
-        HStack { VStack(alignment: .leading) { Text(meal.name).font(.headline); Text("\(meal.grams.formatted()) g").foregroundStyle(.secondary) }; Spacer(); Button("Log", systemImage: "plus.circle.fill") { repeatMeal(meal) }.labelStyle(.iconOnly).font(.title2).accessibilityLabel("Log \(meal.name), \(meal.grams.formatted()) grams") }
-            .contentShape(Rectangle()).onTapGesture { editor = .edit(meal) }
+        VStack(alignment: .leading, spacing: ProteinTheme.Spacing.medium) {
+            HStack(alignment: .firstTextBaseline) {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(meal.name).font(.headline)
+                    Text("\(meal.grams.formatted()) g protein").foregroundStyle(.secondary)
+                }
+                Spacer()
+                Button("Edit", systemImage: "pencil") { editor = .edit(meal) }
+                    .labelStyle(.iconOnly)
+                    .buttonStyle(.borderless)
+                    .accessibilityLabel("Edit \(meal.name)")
+            }
+            Button { repeatMeal(meal) } label: {
+                Label("Add to today", systemImage: "plus")
+                    .font(.subheadline.weight(.semibold))
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .buttonBorderShape(.roundedRectangle(radius: ProteinTheme.Radius.button))
+            .accessibilityLabel("Add \(meal.name), \(meal.grams.formatted()) grams to today")
+        }
+            .padding(.vertical, ProteinTheme.Spacing.small)
             .swipeActions { Button("Delete", systemImage: "trash", role: .destructive) { pendingDelete = meal } }
     }
     private func repository() -> SwiftDataProteinRepository { .init(context: modelContext) }

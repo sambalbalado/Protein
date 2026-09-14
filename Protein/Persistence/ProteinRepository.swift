@@ -21,6 +21,7 @@ public protocol ProteinRepository: AnyObject {
     func delete(_ meal: SavedMeal) throws
     func repeatMeal(_ meal: SavedMeal, at date: Date) throws
     func updateGoal(_ grams: Double, at date: Date) throws
+    func updateSettings(dailyProteinGoal: Double, quickAddSlots: [QuickAddSlotConfiguration], at date: Date) throws
     func settings() throws -> UserSettings
 }
 
@@ -153,6 +154,14 @@ public final class SwiftDataProteinRepository: ProteinRepository {
     }
 
     public func delete(_ meal: SavedMeal) throws {
+        var descriptor = FetchDescriptor<UserSettings>()
+        descriptor.fetchLimit = 1
+        if let currentSettings = try context.fetch(descriptor).first {
+            currentSettings.quickAddSlots = currentSettings.quickAddSlots.map { slot in
+                guard slot.savedMealID == meal.id else { return slot }
+                return QuickAddSlotConfiguration(grams: slot.grams)
+            }
+        }
         context.delete(meal)
         try context.save()
     }
@@ -166,8 +175,27 @@ public final class SwiftDataProteinRepository: ProteinRepository {
 
     public func updateGoal(_ grams: Double, at date: Date = .now) throws {
         let current = try settings()
-        current.dailyProteinGoal = grams
-        context.insert(ProteinGoalChange(grams: grams, effectiveAt: date))
+        try updateSettings(dailyProteinGoal: grams, quickAddSlots: current.quickAddSlots, at: date)
+    }
+
+    public func updateSettings(
+        dailyProteinGoal: Double,
+        quickAddSlots: [QuickAddSlotConfiguration],
+        at date: Date = .now
+    ) throws {
+        guard dailyProteinGoal.isFinite, (20...400).contains(dailyProteinGoal) else {
+            throw ProteinSettingsValidationError.invalidGoal
+        }
+        for slot in quickAddSlots {
+            try ProteinEntryValidator.validate(name: "Quick add", grams: slot.grams)
+        }
+
+        let current = try settings()
+        if current.dailyProteinGoal != dailyProteinGoal {
+            current.dailyProteinGoal = dailyProteinGoal
+            context.insert(ProteinGoalChange(grams: dailyProteinGoal, effectiveAt: date))
+        }
+        current.quickAddSlots = quickAddSlots
         try context.save()
         try synchronizeWidgetState(at: date)
     }

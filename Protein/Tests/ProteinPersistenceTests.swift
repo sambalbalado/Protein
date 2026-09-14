@@ -154,6 +154,44 @@ final class ProteinPersistenceTests: XCTestCase {
         XCTAssertEqual(repeated.count, 1)
     }
 
+    func testQuickActionsPersistCustomAmountsAndSavedMeals() throws {
+        let container = try PersistenceController.makeInMemory()
+        let repository = SwiftDataProteinRepository(context: container.mainContext)
+        let meal = SavedMeal(name: "Greek yogurt", grams: 20)
+        try repository.add(meal)
+        let slots = [
+            QuickAddSlotConfiguration(grams: 7),
+            QuickAddSlotConfiguration(grams: 10, savedMealID: meal.id),
+            QuickAddSlotConfiguration(grams: 30)
+        ]
+
+        try repository.updateSettings(dailyProteinGoal: 135, quickAddSlots: slots, at: .now)
+
+        let settings = try repository.settings()
+        XCTAssertEqual(settings.dailyProteinGoal, 135)
+        XCTAssertEqual(settings.quickAddSlots, slots)
+        XCTAssertEqual(settings.quickAddSlots[1].savedMealID, meal.id)
+    }
+
+    func testDeletingSavedMealFallsBackToConfiguredProteinAmount() throws {
+        let container = try PersistenceController.makeInMemory()
+        let repository = SwiftDataProteinRepository(context: container.mainContext)
+        let meal = SavedMeal(name: "Tofu bowl", grams: 24)
+        try repository.add(meal)
+        let slots = [
+            QuickAddSlotConfiguration(grams: 5),
+            QuickAddSlotConfiguration(grams: 12, savedMealID: meal.id),
+            QuickAddSlotConfiguration(grams: 25)
+        ]
+        try repository.updateSettings(dailyProteinGoal: 120, quickAddSlots: slots, at: .now)
+
+        try repository.delete(meal)
+
+        let fallback = try repository.settings().quickAddSlots[1]
+        XCTAssertNil(fallback.savedMealID)
+        XCTAssertEqual(fallback.grams, 12)
+    }
+
     func testEntryValidationRejectsInvalidValues() {
         XCTAssertThrowsError(try ProteinEntryValidator.validate(name: " ", grams: 20))
         XCTAssertThrowsError(try ProteinEntryValidator.validate(name: "Eggs", grams: 0))
@@ -222,5 +260,6 @@ final class ProteinPersistenceTests: XCTestCase {
 
         XCTAssertEqual(first.id, second.id)
         XCTAssertEqual(first.dailyProteinGoal, 120)
+        XCTAssertEqual(first.quickAddSlots, QuickAddSlotConfiguration.defaults)
     }
 }

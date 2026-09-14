@@ -5,9 +5,10 @@ import SwiftUI
 struct DashboardView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \ProteinEntry.loggedAt, order: .reverse) private var entries: [ProteinEntry]
+    @Query(sort: \SavedMeal.name) private var meals: [SavedMeal]
     @Query private var settings: [UserSettings]
     @State private var editor: EntryEditor?
-    @State private var showGoal = false
+    @State private var showSettings = false
     @State private var pendingDelete: ProteinEntry?
     @State private var errorMessage: String?
     let openEntryRequest: UUID?
@@ -17,6 +18,9 @@ struct DashboardView: View {
     }
 
     private var goal: Double { settings.first?.dailyProteinGoal ?? 120 }
+    private var quickAddSlots: [QuickAddSlotConfiguration] {
+        settings.first?.quickAddSlots ?? QuickAddSlotConfiguration.defaults
+    }
     private var today: [ProteinEntry] { DailyProteinSummary.entries(for: .now, in: entries) }
     private var summary: DailyProteinSummary { .init(entries: today, goal: goal) }
 
@@ -35,15 +39,17 @@ struct DashboardView: View {
             .background(Color(.systemGroupedBackground))
             .navigationTitle("Today")
             .toolbar {
-                Button("Goal", systemImage: "target") { showGoal = true }
-                    .accessibilityHint("Change your daily protein goal")
+                Button("Settings", systemImage: "gearshape") { showSettings = true }
+                    .accessibilityHint("Change your protein goal and quick actions")
             }
         }
         .tint(ProteinTheme.Color.accent)
         .sheet(item: $editor) { value in
             EntryEditorSheet(entry: value.entry) { save(value, name: $0, grams: $1, time: $2, note: $3) }
         }
-        .sheet(isPresented: $showGoal) { GoalEditorSheet(goal: goal, onSave: saveGoal) }
+        .sheet(isPresented: $showSettings) {
+            ProteinSettingsSheet(goal: goal, quickAddSlots: quickAddSlots, meals: meals, onSave: saveSettings)
+        }
         .confirmationDialog("Delete this entry?", isPresented: deleteBinding, titleVisibility: .visible) {
             Button("Delete", role: .destructive) { if let pendingDelete { delete(pendingDelete) } }
             Button("Cancel", role: .cancel) { pendingDelete = nil }
@@ -91,14 +97,30 @@ struct DashboardView: View {
         VStack(alignment: .leading, spacing: ProteinTheme.Spacing.small) {
             Text("Quick add").font(.headline)
             HStack(spacing: ProteinTheme.Spacing.small) {
-                ForEach([5, 10, 25], id: \.self) { grams in
-                    Button { quickAdd(Double(grams)) } label: {
-                        Text("+\(grams) g").lineLimit(1).minimumScaleFactor(0.6)
+                ForEach(Array(quickAddSlots.enumerated()), id: \.offset) { _, slot in
+                    Button { performQuickAdd(slot) } label: {
+                        quickAddLabel(slot)
+                            .frame(maxWidth: .infinity, minHeight: 28)
                     }
-                        .buttonStyle(.bordered).buttonBorderShape(.capsule).frame(maxWidth: .infinity)
-                        .accessibilityHint("Adds \(grams) grams to today")
+                    .buttonStyle(.bordered)
+                    .buttonBorderShape(.capsule)
+                    .frame(maxWidth: .infinity)
+                    .accessibilityLabel(quickAddAccessibilityLabel(slot))
+                    .accessibilityHint("Adds this quick action to today")
                 }
             }
+        }
+    }
+
+    @ViewBuilder
+    private func quickAddLabel(_ slot: QuickAddSlotConfiguration) -> some View {
+        if let meal = meal(for: slot) {
+            VStack(spacing: 1) {
+                Text(meal.name).font(.subheadline.weight(.semibold)).lineLimit(1)
+                Text("\(format(meal.grams)) g").font(.caption2).foregroundStyle(.secondary)
+            }
+        } else {
+            Text("+\(format(slot.grams)) g").lineLimit(1).minimumScaleFactor(0.6)
         }
     }
 
@@ -145,6 +167,22 @@ struct DashboardView: View {
         catch { errorMessage = error.localizedDescription }
     }
     private func quickAdd(_ grams: Double) { do { try repository().addQuickProtein(grams, at: .now) } catch { errorMessage = error.localizedDescription } }
+    private func performQuickAdd(_ slot: QuickAddSlotConfiguration) {
+        if let meal = meal(for: slot) {
+            repeatMeal(meal)
+        } else {
+            quickAdd(slot.grams)
+        }
+    }
+    private func meal(for slot: QuickAddSlotConfiguration) -> SavedMeal? {
+        guard let id = slot.savedMealID else { return nil }
+        return meals.first { $0.id == id }
+    }
+    private func quickAddAccessibilityLabel(_ slot: QuickAddSlotConfiguration) -> String {
+        if let meal = meal(for: slot) { return "Add \(meal.name), \(format(meal.grams)) grams" }
+        return "Add \(format(slot.grams)) grams"
+    }
+    private func repeatMeal(_ meal: SavedMeal) { do { try repository().repeatMeal(meal, at: .now) } catch { errorMessage = error.localizedDescription } }
     private func repeatEntry(_ entry: ProteinEntry) { do { try repository().add(ProteinEntry(name: entry.name, grams: entry.grams, note: entry.note)) } catch { errorMessage = error.localizedDescription } }
     private func saveAsMeal(_ entry: ProteinEntry) { do { try repository().add(SavedMeal(name: entry.name, grams: entry.grams, note: entry.note)) } catch { errorMessage = error.localizedDescription } }
     private func delete(_ entry: ProteinEntry) { do { try repository().delete(entry); pendingDelete = nil } catch { errorMessage = error.localizedDescription } }
@@ -172,10 +210,8 @@ struct DashboardView: View {
         } catch { errorMessage = error.localizedDescription }
     }
 
-    private func saveGoal(_ value: Double) {
-        guard value.isFinite, (20...400).contains(value) else { errorMessage = "Choose a daily goal between 20 g and 400 g."; return }
-        do { try repository().updateGoal(value, at: .now); showGoal = false }
-        catch { errorMessage = error.localizedDescription }
+    private func saveSettings(goal: Double, quickAddSlots: [QuickAddSlotConfiguration]) throws {
+        try repository().updateSettings(dailyProteinGoal: goal, quickAddSlots: quickAddSlots, at: .now)
     }
 
     private func format(_ value: Double) -> String { value.formatted(.number.precision(.fractionLength(value.rounded() == value ? 0 : 1))) }
@@ -231,20 +267,118 @@ private struct EntryEditorSheet: View {
     }
 }
 
-private struct GoalEditorSheet: View {
+private struct ProteinSettingsSheet: View {
     @Environment(\.dismiss) private var dismiss
-    @State private var text: String
-    let onSave: (Double) -> Void
-    init(goal: Double, onSave: @escaping (Double) -> Void) { _text = .init(initialValue: String(format: "%g", goal)); self.onSave = onSave }
+    @State private var goalText: String
+    @State private var gramTexts: [String]
+    @State private var selectedMealIDs: [UUID?]
+    @State private var message: String?
+    let meals: [SavedMeal]
+    let onSave: (Double, [QuickAddSlotConfiguration]) throws -> Void
+
+    init(
+        goal: Double,
+        quickAddSlots: [QuickAddSlotConfiguration],
+        meals: [SavedMeal],
+        onSave: @escaping (Double, [QuickAddSlotConfiguration]) throws -> Void
+    ) {
+        let slots = QuickAddSlotConfiguration.normalized(quickAddSlots)
+        _goalText = .init(initialValue: String(format: "%g", goal))
+        _gramTexts = .init(initialValue: slots.map { String(format: "%g", $0.grams) })
+        _selectedMealIDs = .init(initialValue: slots.map(\.savedMealID))
+        self.meals = meals
+        self.onSave = onSave
+    }
+
     var body: some View {
         NavigationStack {
-            Form { Section("Daily goal") { TextField("Protein grams", text: $text).keyboardType(.decimalPad); Text("Choose between 20 g and 400 g. You can change this anytime.").font(.footnote).foregroundStyle(.secondary) } }
-                .navigationTitle("Protein goal").navigationBarTitleDisplayMode(.inline)
+            Form {
+                Section("Daily goal") {
+                    HStack {
+                        TextField("Protein grams", text: $goalText).keyboardType(.decimalPad)
+                        Text("g").foregroundStyle(.secondary)
+                    }
+                    Text("Choose between 20 g and 400 g. You can change this anytime.")
+                        .font(.footnote).foregroundStyle(.secondary)
+                }
+
+                Section {
+                    ForEach(gramTexts.indices, id: \.self) { index in
+                        VStack(alignment: .leading, spacing: ProteinTheme.Spacing.small) {
+                            Text("Button \(index + 1)").font(.subheadline.weight(.semibold))
+                            Picker("Action", selection: mealSelection(for: index)) {
+                                Text("Protein amount").tag("")
+                                ForEach(meals) { meal in
+                                    Text("\(meal.name) · \(meal.grams.formatted()) g").tag(meal.id.uuidString)
+                                }
+                            }
+                            if selectedMealIDs[index] == nil {
+                                HStack {
+                                    TextField("Amount", text: $gramTexts[index]).keyboardType(.decimalPad)
+                                    Text("g").foregroundStyle(.secondary)
+                                }
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    }
+                    if meals.isEmpty {
+                        Text("Save a meal from the Meals tab to assign it here.")
+                            .font(.footnote).foregroundStyle(.secondary)
+                    }
+                } header: {
+                    Text("Quick actions")
+                } footer: {
+                    Text("Each Today button can add a custom amount or one of your saved meals.")
+                }
+
+                if let message {
+                    Section { Text(message).font(.footnote).foregroundStyle(.red) }
+                }
+            }
+                .navigationTitle("Settings").navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
-                    ToolbarItem(placement: .confirmationAction) { Button("Save") { if let value = Double(text.replacingOccurrences(of: ",", with: ".")) { onSave(value) } }.fontWeight(.semibold) }
+                    ToolbarItem(placement: .confirmationAction) { Button("Save", action: save).fontWeight(.semibold) }
                 }
-        }.presentationDetents([.medium])
+        }
+    }
+
+    private func mealSelection(for index: Int) -> Binding<String> {
+        Binding(
+            get: { selectedMealIDs[index]?.uuidString ?? "" },
+            set: { selectedMealIDs[index] = UUID(uuidString: $0) }
+        )
+    }
+
+    private func save() {
+        guard let goal = decimal(from: goalText), (20...400).contains(goal) else {
+            message = "Choose a daily goal between 20 g and 400 g."
+            return
+        }
+
+        var slots: [QuickAddSlotConfiguration] = []
+        for index in gramTexts.indices {
+            guard let grams = decimal(from: gramTexts[index]), grams > 0, grams <= ProteinEntryValidator.maximumGrams else {
+                message = "Each protein amount must be between 0 and 300 g."
+                return
+            }
+            if let mealID = selectedMealIDs[index], !meals.contains(where: { $0.id == mealID }) {
+                message = "One selected meal is no longer available. Choose another meal."
+                return
+            }
+            slots.append(QuickAddSlotConfiguration(grams: grams, savedMealID: selectedMealIDs[index]))
+        }
+
+        do {
+            try onSave(goal, slots)
+            dismiss()
+        } catch {
+            message = error.localizedDescription
+        }
+    }
+
+    private func decimal(from text: String) -> Double? {
+        Double(text.replacingOccurrences(of: ",", with: "."))
     }
 }
 

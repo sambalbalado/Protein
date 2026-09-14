@@ -4,7 +4,7 @@ Protein is a premium-feeling minimalist, native iPhone app for tracking daily pr
 
 ## Status
 
-Day 6 adds a small and medium interactive widget with synchronized daily progress, offline quick additions, repeat-last support, local-day rollover, and a deep link into precise manual entry.
+Day 6 adds a small and medium interactive widget with synchronized daily progress, offline quick additions, repeat-last support, local-day rollover, and a deep link into precise manual entry. The Today screen also offers three locally stored quick actions that can each use a custom protein amount or a saved meal.
 
 ## Product principles
 
@@ -81,6 +81,10 @@ The checked-in bundle IDs and App Group use the generic `com.example` namespace.
 - `Server`: optional Cloudflare Worker proxy example; the provider credential exists only in server-side environment variables
 
 Domain calculations and mutations stay behind `ProteinRepository` and testable core types. SwiftUI uses live SwiftData queries where immediate screen updates matter, while insights fetch only the visible week/month window. `PersistenceController.makeInMemory()` supplies an isolated test store.
+
+### Settings and saved meals
+
+Open the gear button on Today to change the daily goal and configure each of the three quick actions. A quick action can add a custom gram amount or repeat a saved meal. Saved meals remain available offline and include a visible **Add to today** action; deleting a meal safely returns any linked quick action to its stored gram amount.
 
 ### Local configuration and secrets
 

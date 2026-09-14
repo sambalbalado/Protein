@@ -50,14 +50,60 @@ public final class SavedMeal {
     }
 }
 
+public struct QuickAddSlotConfiguration: Codable, Equatable, Sendable {
+    public var grams: Double
+    public var savedMealID: UUID?
+
+    public init(grams: Double, savedMealID: UUID? = nil) {
+        self.grams = grams
+        self.savedMealID = savedMealID
+    }
+
+    public static let defaults = [
+        QuickAddSlotConfiguration(grams: 5),
+        QuickAddSlotConfiguration(grams: 10),
+        QuickAddSlotConfiguration(grams: 25)
+    ]
+
+    public static func normalized(_ slots: [QuickAddSlotConfiguration]) -> [QuickAddSlotConfiguration] {
+        defaults.indices.map { index in
+            guard slots.indices.contains(index) else { return defaults[index] }
+            let slot = slots[index]
+            let grams = slot.grams.isFinite && slot.grams > 0 && slot.grams <= ProteinEntryValidator.maximumGrams
+                ? slot.grams
+                : defaults[index].grams
+            return QuickAddSlotConfiguration(grams: grams, savedMealID: slot.savedMealID)
+        }
+    }
+}
+
 @Model
 public final class UserSettings {
     @Attribute(.unique) public var id: UUID
     public var dailyProteinGoal: Double
+    public var quickAddConfigurationData: Data?
 
-    public init(id: UUID = UUID(), dailyProteinGoal: Double = 120) {
+    public init(
+        id: UUID = UUID(),
+        dailyProteinGoal: Double = 120,
+        quickAddSlots: [QuickAddSlotConfiguration] = QuickAddSlotConfiguration.defaults
+    ) {
         self.id = id
         self.dailyProteinGoal = dailyProteinGoal
+        quickAddConfigurationData = try? JSONEncoder().encode(QuickAddSlotConfiguration.normalized(quickAddSlots))
+    }
+
+    public var quickAddSlots: [QuickAddSlotConfiguration] {
+        get {
+            guard let quickAddConfigurationData,
+                  let decoded = try? JSONDecoder().decode([QuickAddSlotConfiguration].self, from: quickAddConfigurationData) else {
+                return QuickAddSlotConfiguration.defaults
+            }
+            return QuickAddSlotConfiguration.normalized(decoded)
+        }
+        set {
+            quickAddConfigurationData = try? JSONEncoder().encode(QuickAddSlotConfiguration.normalized(newValue))
+        }
     }
 }
 
@@ -84,6 +130,14 @@ public enum ProteinEntryValidationError: LocalizedError, Equatable {
         case .nonPositiveGrams: "Protein must be greater than 0 g."
         case .implausibleGrams: "That amount looks unusually high. Enter 300 g or less per item."
         }
+    }
+}
+
+public enum ProteinSettingsValidationError: LocalizedError, Equatable {
+    case invalidGoal
+
+    public var errorDescription: String? {
+        "Choose a daily goal between 20 g and 400 g."
     }
 }
 
