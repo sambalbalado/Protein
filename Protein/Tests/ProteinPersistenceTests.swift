@@ -4,6 +4,112 @@ import XCTest
 
 @MainActor
 final class ProteinPersistenceTests: XCTestCase {
+    func testWidgetQuickAddsCreateExactlyOneEntryPerTapAndSynchronizeTotal() throws {
+        let container = try PersistenceController.makeInMemory()
+        let suite = "ProteinWidgetTests.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = try XCTUnwrap(TimeZone(identifier: "UTC"))
+        let now = try XCTUnwrap(ISO8601DateFormatter().date(from: "2026-09-15T12:00:00Z"))
+        let repository = SwiftDataProteinRepository(
+            context: container.mainContext,
+            widgetDefaults: defaults,
+            widgetCalendar: calendar,
+            widgetNow: { now },
+            reloadWidgetTimelines: false
+        )
+
+        try repository.addQuickProtein(5, at: now)
+        XCTAssertEqual(try repository.entries(from: calendar.startOfDay(for: now), to: now.addingTimeInterval(43_200)).count, 1)
+        XCTAssertEqual(ProteinWidgetStateStore.read(defaults: defaults, at: now, calendar: calendar).total, 5)
+
+        try repository.addQuickProtein(10, at: now)
+        let entries = try repository.entries(from: calendar.startOfDay(for: now), to: now.addingTimeInterval(43_200))
+        XCTAssertEqual(entries.count, 2)
+        XCTAssertEqual(entries.reduce(0) { $0 + $1.grams }, 15)
+        XCTAssertEqual(ProteinWidgetStateStore.read(defaults: defaults, at: now, calendar: calendar).total, 15)
+
+        try repository.delete(try XCTUnwrap(entries.first(where: { $0.grams == 10 })))
+        XCTAssertEqual(ProteinWidgetStateStore.read(defaults: defaults, at: now, calendar: calendar).total, 5)
+    }
+
+    func testWidgetRepeatCreatesOneEntryFromLatestEligibleEntry() throws {
+        let container = try PersistenceController.makeInMemory()
+        let suite = "ProteinWidgetTests.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = try XCTUnwrap(TimeZone(identifier: "UTC"))
+        let now = try XCTUnwrap(ISO8601DateFormatter().date(from: "2026-09-15T12:00:00Z"))
+        let repository = SwiftDataProteinRepository(
+            context: container.mainContext,
+            widgetDefaults: defaults,
+            widgetCalendar: calendar,
+            widgetNow: { now },
+            reloadWidgetTimelines: false
+        )
+        try repository.add(ProteinEntry(name: "Tofu bowl", grams: 24, loggedAt: now.addingTimeInterval(-60), note: "Lunch"))
+
+        XCTAssertTrue(try repository.repeatLatestEligibleEntry(at: now))
+
+        let entries = try repository.entries(from: calendar.startOfDay(for: now), to: now.addingTimeInterval(1))
+        XCTAssertEqual(entries.count, 2)
+        XCTAssertEqual(entries.map(\.grams), [24, 24])
+        XCTAssertEqual(entries.first?.name, "Tofu bowl")
+        XCTAssertEqual(ProteinWidgetStateStore.read(defaults: defaults, at: now, calendar: calendar).total, 48)
+    }
+
+    func testWidgetStateMigratesLegacyTotalAndRollsOverAtLocalMidnight() throws {
+        let suite = "ProteinWidgetTests.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = try XCTUnwrap(TimeZone(identifier: "America/Los_Angeles"))
+        let day = try XCTUnwrap(ISO8601DateFormatter().date(from: "2026-11-01T19:00:00Z"))
+        defaults.set(35, forKey: AppGroup.todayProteinKey)
+        defaults.set(110, forKey: AppGroup.todayGoalKey)
+
+        let migrated = ProteinWidgetStateStore.read(defaults: defaults, at: day, calendar: calendar)
+        XCTAssertEqual(migrated.total, 35)
+        XCTAssertEqual(migrated.goal, 110)
+
+        let current = ProteinWidgetState(
+            dayStart: calendar.startOfDay(for: day),
+            total: 70,
+            goal: 110,
+            lastUpdated: day,
+            latestEntryName: "Tempeh",
+            latestEntryGrams: 22
+        )
+        try ProteinWidgetStateStore.write(current, defaults: defaults)
+        let nextDay = try XCTUnwrap(calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: day)))
+        let rolledOver = ProteinWidgetStateStore.read(defaults: defaults, at: nextDay, calendar: calendar)
+
+        XCTAssertEqual(rolledOver.total, 0)
+        XCTAssertEqual(rolledOver.goal, 110)
+        XCTAssertEqual(rolledOver.latestEntryName, "Tempeh")
+        XCTAssertTrue(rolledOver.canRepeatLatestEntry)
+        XCTAssertNil(defaults.object(forKey: AppGroup.todayProteinKey))
+    }
+
+    func testWidgetStateFallsBackSafelyWhenDataIsMissingOrUnknown() throws {
+        let suite = "ProteinWidgetTests.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+
+        XCTAssertEqual(ProteinWidgetStateStore.read(defaults: defaults, at: now).total, 0)
+        defaults.set(Data("not-json".utf8), forKey: AppGroup.widgetStateKey)
+        XCTAssertEqual(ProteinWidgetStateStore.read(defaults: defaults, at: now).goal, 120)
+    }
+
+    func testPreciseEntryDeepLinkAcceptsOnlyTheLoggingDestination() throws {
+        XCTAssertEqual(ProteinDeepLink(url: ProteinDeepLink.preciseEntryURL), .preciseEntry)
+        XCTAssertNil(ProteinDeepLink(url: try XCTUnwrap(URL(string: "protein://estimate"))))
+        XCTAssertNil(ProteinDeepLink(url: try XCTUnwrap(URL(string: "https://example.com/log"))))
+    }
+
     func testInsightsUseDateRangeTotalsAndHistoricalGoals() throws {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = try XCTUnwrap(TimeZone(identifier: "UTC"))

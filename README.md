@@ -4,7 +4,7 @@ Protein is a premium-feeling minimalist, native iPhone app for tracking daily pr
 
 ## Status
 
-Day 5 connects the provider-neutral analysis boundary to native camera and Photos flows, metadata-minimized uploads, a configurable HTTPS proxy, recoverable errors, and the same explicit edit-before-save review.
+Day 6 adds a small and medium interactive widget with synchronized daily progress, offline quick additions, repeat-last support, local-day rollover, and a deep link into precise manual entry.
 
 ## Product principles
 
@@ -93,6 +93,14 @@ The Estimate tab uses Apple's system Photos picker or the camera. Protein redraw
 The example proxy lives in `Server`; follow `Server/README.md` to configure it. It uses the [OpenAI Responses API](https://developers.openai.com/api/reference/cli/resources/responses/methods/create), which supports image inputs and structured JSON outputs. Provider use has a real cost and provider-side data handling depends on the selected account and model. Run a live smoke test only with an explicitly authorized photo and after reviewing current pricing.
 
 Photo-derived foods, portions, confidence values, and protein grams are estimates based on what is visible. Hidden ingredients and uncertain portion sizes can materially change the result. The app validates every response, highlights low confidence, and saves nothing until the user reviews, edits, and confirms it. Physical camera hardware and permission behavior must still be checked on an iPhone.
+
+### Interactive widget
+
+Add **Daily Protein** from the system widget gallery after running the app once. The small widget shows today’s total, goal progress, last refresh, and +5 g/+10 g actions. The medium widget also repeats the latest valid entry and opens Protein’s precise manual-entry sheet.
+
+App and widget mutations save real SwiftData entries in the shared App Group store, then publish a compact versioned snapshot for fast rendering. The snapshot contains only today’s total, goal, refresh time, and the latest entry’s name and grams; it contains no meal photos, account data, or AI credentials. Missing or unreadable state falls back safely, legacy total keys migrate on the next write, and a scheduled midnight timeline entry resets the visible total using the local calendar.
+
+Widget actions remain offline. If protected data is unavailable while the device is locked, the action fails with a recoverable instruction instead of inventing or silently duplicating an entry. Each explicit quick-add or repeat invocation creates at most one entry.
 
 ### Command-line verification
 

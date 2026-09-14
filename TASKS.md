@@ -7,7 +7,7 @@ The authoritative tracker is the **Protein Tasks** database in Notion. This file
 - [x] Day 3 — Add history, calendar insights, and reusable meals
 - [x] Day 4 — Define and test the AI meal-analysis boundary
 - [ ] Day 5 — Connect meal photos to live AI estimation
-- [ ] Day 6 — Build the interactive protein widget
+- [x] Day 6 — Build the interactive protein widget
 - [ ] Day 7 — Apply premium polish, verify, document, and install
 - [ ] Day 8 — Add personalized onboarding and goal setup
 - [ ] Day 9 — Add weight tracking and progress

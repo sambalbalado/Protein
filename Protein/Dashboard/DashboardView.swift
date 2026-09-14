@@ -10,6 +10,11 @@ struct DashboardView: View {
     @State private var showGoal = false
     @State private var pendingDelete: ProteinEntry?
     @State private var errorMessage: String?
+    let openEntryRequest: UUID?
+
+    init(openEntryRequest: UUID? = nil) {
+        self.openEntryRequest = openEntryRequest
+    }
 
     private var goal: Double { settings.first?.dailyProteinGoal ?? 120 }
     private var today: [ProteinEntry] { DailyProteinSummary.entries(for: .now, in: entries) }
@@ -47,6 +52,9 @@ struct DashboardView: View {
             Button("OK", role: .cancel) {}
         } message: { Text(errorMessage ?? "Please try again.") }
         .task { ensureSettings() }
+        .onChange(of: openEntryRequest) { _, request in
+            if request != nil { editor = .new }
+        }
     }
 
     private var progressCard: some View {
@@ -132,8 +140,11 @@ struct DashboardView: View {
     private var errorBinding: Binding<Bool> { .init(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } }) }
     private func repository() -> SwiftDataProteinRepository { .init(context: modelContext) }
 
-    private func ensureSettings() { do { _ = try repository().settings() } catch { errorMessage = error.localizedDescription } }
-    private func quickAdd(_ grams: Double) { do { try repository().add(ProteinEntry(name: "Quick add", grams: grams)) } catch { errorMessage = error.localizedDescription } }
+    private func ensureSettings() {
+        do { try repository().synchronizeWidgetState(at: .now) }
+        catch { errorMessage = error.localizedDescription }
+    }
+    private func quickAdd(_ grams: Double) { do { try repository().addQuickProtein(grams, at: .now) } catch { errorMessage = error.localizedDescription } }
     private func repeatEntry(_ entry: ProteinEntry) { do { try repository().add(ProteinEntry(name: entry.name, grams: entry.grams, note: entry.note)) } catch { errorMessage = error.localizedDescription } }
     private func saveAsMeal(_ entry: ProteinEntry) { do { try repository().add(SavedMeal(name: entry.name, grams: entry.grams, note: entry.note)) } catch { errorMessage = error.localizedDescription } }
     private func delete(_ entry: ProteinEntry) { do { try repository().delete(entry); pendingDelete = nil } catch { errorMessage = error.localizedDescription } }

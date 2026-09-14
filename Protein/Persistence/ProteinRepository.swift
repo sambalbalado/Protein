@@ -1,11 +1,18 @@
 import Foundation
 import SwiftData
+#if canImport(WidgetKit)
+import WidgetKit
+#endif
 
 @MainActor
 public protocol ProteinRepository: AnyObject {
     func entries(from start: Date, to end: Date) throws -> [ProteinEntry]
     func add(_ entry: ProteinEntry) throws
     func add(_ entries: [ProteinEntry]) throws
+    func addQuickProtein(_ grams: Double, at date: Date) throws
+    func repeatLatestEligibleEntry(at date: Date) throws -> Bool
+    func latestEligibleEntry(before date: Date) throws -> ProteinEntry?
+    @discardableResult func synchronizeWidgetState(at date: Date) throws -> ProteinWidgetState
     func save() throws
     func delete(_ entry: ProteinEntry) throws
     func savedMeals() throws -> [SavedMeal]
@@ -20,9 +27,23 @@ public protocol ProteinRepository: AnyObject {
 @MainActor
 public final class SwiftDataProteinRepository: ProteinRepository {
     private let context: ModelContext
+    private let widgetDefaults: UserDefaults
+    private let widgetCalendar: Calendar
+    private let widgetNow: () -> Date
+    private let reloadWidgetTimelines: Bool
 
-    public init(context: ModelContext) {
+    public init(
+        context: ModelContext,
+        widgetDefaults: UserDefaults = AppGroup.defaults,
+        widgetCalendar: Calendar = .current,
+        widgetNow: @escaping () -> Date = { .now },
+        reloadWidgetTimelines: Bool = true
+    ) {
         self.context = context
+        self.widgetDefaults = widgetDefaults
+        self.widgetCalendar = widgetCalendar
+        self.widgetNow = widgetNow
+        self.reloadWidgetTimelines = reloadWidgetTimelines
     }
 
     public func entries(from start: Date, to end: Date) throws -> [ProteinEntry] {
@@ -39,25 +60,80 @@ public final class SwiftDataProteinRepository: ProteinRepository {
     public func add(_ entry: ProteinEntry) throws {
         context.insert(entry)
         try context.save()
+        try synchronizeWidgetState(at: widgetNow())
     }
 
     public func add(_ entries: [ProteinEntry]) throws {
         do {
             entries.forEach(context.insert)
             try context.save()
+            try synchronizeWidgetState(at: widgetNow())
         } catch {
             context.rollback()
             throw error
         }
     }
 
+    public func addQuickProtein(_ grams: Double, at date: Date = .now) throws {
+        try ProteinEntryValidator.validate(name: "Quick add", grams: grams)
+        try add(ProteinEntry(name: "Quick add", grams: grams, loggedAt: date))
+    }
+
+    public func repeatLatestEligibleEntry(at date: Date = .now) throws -> Bool {
+        guard let latest = try latestEligibleEntry(before: date) else { return false }
+        try ProteinEntryValidator.validate(name: latest.name, grams: latest.grams)
+        try add(ProteinEntry(name: latest.name, grams: latest.grams, loggedAt: date, note: latest.note))
+        return true
+    }
+
+    public func latestEligibleEntry(before date: Date = .now) throws -> ProteinEntry? {
+        let predicate = #Predicate<ProteinEntry> { entry in
+            entry.loggedAt <= date
+        }
+        var descriptor = FetchDescriptor(
+            predicate: predicate,
+            sortBy: [SortDescriptor(\.loggedAt, order: .reverse)]
+        )
+        descriptor.fetchLimit = 50
+        return try context.fetch(descriptor).first { entry in
+            (try? ProteinEntryValidator.validate(name: entry.name, grams: entry.grams)) != nil
+        }
+    }
+
+    @discardableResult
+    public func synchronizeWidgetState(at date: Date = .now) throws -> ProteinWidgetState {
+        guard let interval = widgetCalendar.dateInterval(of: .day, for: date) else {
+            let state = ProteinWidgetState.empty(at: date, calendar: widgetCalendar)
+            try ProteinWidgetStateStore.write(state, defaults: widgetDefaults)
+            reloadWidget()
+            return state
+        }
+
+        let currentSettings = try settings()
+        let todayEntries = try entries(from: interval.start, to: interval.end)
+        let latest = try latestEligibleEntry(before: date)
+        let state = ProteinWidgetState(
+            dayStart: interval.start,
+            total: todayEntries.reduce(0) { $0 + $1.grams },
+            goal: currentSettings.dailyProteinGoal,
+            lastUpdated: date,
+            latestEntryName: latest?.name,
+            latestEntryGrams: latest?.grams
+        )
+        try ProteinWidgetStateStore.write(state, defaults: widgetDefaults)
+        reloadWidget()
+        return state
+    }
+
     public func save() throws {
         try context.save()
+        try synchronizeWidgetState(at: widgetNow())
     }
 
     public func delete(_ entry: ProteinEntry) throws {
         context.delete(entry)
         try context.save()
+        try synchronizeWidgetState(at: widgetNow())
     }
 
     public func savedMeals() throws -> [SavedMeal] {
@@ -85,6 +161,7 @@ public final class SwiftDataProteinRepository: ProteinRepository {
         meal.lastUsedAt = date
         context.insert(ProteinEntry(name: meal.name, grams: meal.grams, loggedAt: date, note: meal.note))
         try context.save()
+        try synchronizeWidgetState(at: date)
     }
 
     public func updateGoal(_ grams: Double, at date: Date = .now) throws {
@@ -92,6 +169,7 @@ public final class SwiftDataProteinRepository: ProteinRepository {
         current.dailyProteinGoal = grams
         context.insert(ProteinGoalChange(grams: grams, effectiveAt: date))
         try context.save()
+        try synchronizeWidgetState(at: date)
     }
 
     public func settings() throws -> UserSettings {
@@ -110,5 +188,12 @@ public final class SwiftDataProteinRepository: ProteinRepository {
         context.insert(ProteinGoalChange(grams: settings.dailyProteinGoal, effectiveAt: .distantPast))
         try context.save()
         return settings
+    }
+
+    private func reloadWidget() {
+#if canImport(WidgetKit)
+        guard reloadWidgetTimelines else { return }
+        WidgetCenter.shared.reloadTimelines(ofKind: AppGroup.widgetKind)
+#endif
     }
 }
