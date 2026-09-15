@@ -134,24 +134,38 @@ struct DashboardView: View {
                 } else {
                     ForEach(Array(today.enumerated()), id: \.element.id) { index, entry in
                         if index > 0 { Divider() }
-                        Button { editor = .edit(entry) } label: {
-                            HStack(spacing: ProteinTheme.Spacing.medium) {
-                                VStack(alignment: .leading, spacing: 3) {
-                                    Text(entry.name).font(.body.weight(.semibold)).foregroundStyle(.primary)
-                                    Text(entry.loggedAt, style: .time).font(.caption).foregroundStyle(.secondary)
-                                    if let note = entry.note, !note.isEmpty { Text(note).font(.caption).foregroundStyle(.secondary).lineLimit(1) }
+                        HStack(spacing: ProteinTheme.Spacing.small) {
+                            Button { editor = .edit(entry) } label: {
+                                HStack(spacing: ProteinTheme.Spacing.medium) {
+                                    VStack(alignment: .leading, spacing: 3) {
+                                        Text(entry.name).font(.body.weight(.semibold)).foregroundStyle(.primary)
+                                        Text(entry.loggedAt, style: .time).font(.caption).foregroundStyle(.secondary)
+                                        if let note = entry.note, !note.isEmpty { Text(note).font(.caption).foregroundStyle(.secondary).lineLimit(1) }
+                                    }
+                                    Spacer()
+                                    Text("\(format(entry.grams)) g").font(.headline.monospacedDigit()).foregroundStyle(.primary)
                                 }
-                                Spacer()
-                                Text("\(format(entry.grams)) g").font(.headline.monospacedDigit()).foregroundStyle(.primary)
-                            }.contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .contentShape(Rectangle())
+                            .accessibilityHint("Double tap to edit")
+
+                            Menu {
+                                Button("Edit entry", systemImage: "pencil") { editor = .edit(entry) }
+                                Button("Repeat now", systemImage: "arrow.clockwise") { repeatEntry(entry) }
+                                Button("Save as meal", systemImage: "bookmark") { saveAsMeal(entry) }
+                                Divider()
+                                Button("Delete entry", systemImage: "trash", role: .destructive) { pendingDelete = entry }
+                            } label: {
+                                Image(systemName: "ellipsis")
+                                    .font(.body.weight(.semibold))
+                                    .frame(width: 44, height: 44)
+                                    .background(Color(.tertiarySystemFill), in: Circle())
+                            }
+                            .accessibilityLabel("Actions for \(entry.name)")
+                            .accessibilityHint("Edit, repeat, save, or delete this entry")
                         }
-                        .buttonStyle(.plain)
-                        .contextMenu {
-                            Button("Repeat now", systemImage: "arrow.clockwise") { repeatEntry(entry) }
-                            Button("Save as meal", systemImage: "bookmark") { saveAsMeal(entry) }
-                        }
-                        .swipeActions { Button("Delete", systemImage: "trash", role: .destructive) { pendingDelete = entry } }
-                        .accessibilityHint("Double tap to edit. Swipe for delete.")
                     }
                 }
             }
@@ -273,8 +287,16 @@ private struct ProteinSettingsSheet: View {
     @State private var gramTexts: [String]
     @State private var selectedMealIDs: [UUID?]
     @State private var message: String?
+    @FocusState private var focusedField: SettingsField?
     let meals: [SavedMeal]
     let onSave: (Double, [QuickAddSlotConfiguration]) throws -> Void
+
+    private enum SettingsField: Hashable {
+        case goal
+        case quickAction(Int)
+    }
+
+    private let shortcutNames = ["Left shortcut", "Middle shortcut", "Right shortcut"]
 
     init(
         goal: Double,
@@ -292,55 +314,172 @@ private struct ProteinSettingsSheet: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                Section("Daily goal") {
-                    HStack {
-                        TextField("Protein grams", text: $goalText).keyboardType(.decimalPad)
-                        Text("g").foregroundStyle(.secondary)
-                    }
-                    Text("Choose between 20 g and 400 g. You can change this anytime.")
-                        .font(.footnote).foregroundStyle(.secondary)
-                }
+            ScrollView {
+                VStack(alignment: .leading, spacing: ProteinTheme.Spacing.large) {
+                    ProteinCard {
+                        VStack(alignment: .leading, spacing: ProteinTheme.Spacing.medium) {
+                            Label("Daily goal", systemImage: "target")
+                                .font(.headline)
+                                .foregroundStyle(.primary)
 
-                Section {
-                    ForEach(gramTexts.indices, id: \.self) { index in
-                        VStack(alignment: .leading, spacing: ProteinTheme.Spacing.small) {
-                            Text("Button \(index + 1)").font(.subheadline.weight(.semibold))
-                            Picker("Action", selection: mealSelection(for: index)) {
-                                Text("Protein amount").tag("")
-                                ForEach(meals) { meal in
-                                    Text("\(meal.name) · \(meal.grams.formatted()) g").tag(meal.id.uuidString)
+                            Text("Set the target shown on Today and in your progress history.")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+
+                            HStack(spacing: ProteinTheme.Spacing.medium) {
+                                adjustmentButton(
+                                    systemImage: "minus",
+                                    accessibilityLabel: "Decrease daily goal"
+                                ) { adjustGoal(by: -5) }
+
+                                Spacer(minLength: 0)
+
+                                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                                    TextField("120", text: $goalText)
+                                        .keyboardType(.decimalPad)
+                                        .multilineTextAlignment(.trailing)
+                                        .font(.system(size: 38, weight: .bold, design: .rounded))
+                                        .monospacedDigit()
+                                        .frame(maxWidth: 104)
+                                        .focused($focusedField, equals: .goal)
+                                        .accessibilityLabel("Daily protein goal in grams")
+                                    Text("g")
+                                        .font(.title3.weight(.semibold))
+                                        .foregroundStyle(.secondary)
                                 }
+
+                                Spacer(minLength: 0)
+
+                                adjustmentButton(
+                                    systemImage: "plus",
+                                    accessibilityLabel: "Increase daily goal"
+                                ) { adjustGoal(by: 5) }
                             }
-                            if selectedMealIDs[index] == nil {
-                                HStack {
-                                    TextField("Amount", text: $gramTexts[index]).keyboardType(.decimalPad)
-                                    Text("g").foregroundStyle(.secondary)
-                                }
-                            }
+
+                            Text("20–400 g · Adjust in 5 g steps or type a value")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .frame(maxWidth: .infinity, alignment: .center)
                         }
-                        .padding(.vertical, 4)
                     }
-                    if meals.isEmpty {
-                        Text("Save a meal from the Meals tab to assign it here.")
-                            .font(.footnote).foregroundStyle(.secondary)
-                    }
-                } header: {
-                    Text("Quick actions")
-                } footer: {
-                    Text("Each Today button can add a custom amount or one of your saved meals.")
-                }
 
-                if let message {
-                    Section { Text(message).font(.footnote).foregroundStyle(.red) }
+                    VStack(alignment: .leading, spacing: ProteinTheme.Spacing.medium) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Quick actions").font(.title3.weight(.bold))
+                            Text("Choose what appears across the Today screen, from left to right.")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+
+                        ForEach(gramTexts.indices, id: \.self) { index in
+                            quickActionEditor(index)
+                        }
+
+                        if meals.isEmpty {
+                            Label("Save a meal from the Meals tab to use it as a shortcut.", systemImage: "bookmark")
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+
+                    if let message {
+                        Label(message, systemImage: "exclamationmark.circle.fill")
+                            .font(.footnote.weight(.medium))
+                            .foregroundStyle(.red)
+                    }
+                }
+                .padding(ProteinTheme.Spacing.medium)
+            }
+            .background(Color(.systemGroupedBackground))
+            .safeAreaInset(edge: .bottom) {
+                PrimaryActionButton(title: "Save changes", systemImage: "checkmark", action: save)
+                    .padding(.horizontal, ProteinTheme.Spacing.medium)
+                    .padding(.vertical, ProteinTheme.Spacing.small)
+                    .background(.ultraThinMaterial)
+            }
+            .navigationTitle("Settings")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") { focusedField = nil }
                 }
             }
-                .navigationTitle("Settings").navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
-                    ToolbarItem(placement: .confirmationAction) { Button("Save", action: save).fontWeight(.semibold) }
-                }
         }
+    }
+
+    private func quickActionEditor(_ index: Int) -> some View {
+        ProteinCard {
+            VStack(alignment: .leading, spacing: ProteinTheme.Spacing.medium) {
+                HStack {
+                    Label(shortcutNames[index], systemImage: "bolt.fill")
+                        .font(.subheadline.weight(.semibold))
+                    Spacer()
+                    Text(shortcutPreview(for: index))
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(ProteinTheme.Color.accent)
+                        .lineLimit(1)
+                }
+
+                Picker("Adds", selection: mealSelection(for: index)) {
+                    Text("Custom protein amount").tag("")
+                    ForEach(meals) { meal in
+                        Text("\(meal.name) · \(meal.grams.formatted()) g").tag(meal.id.uuidString)
+                    }
+                }
+                .pickerStyle(.menu)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                if selectedMealIDs[index] == nil {
+                    HStack(spacing: ProteinTheme.Spacing.medium) {
+                        adjustmentButton(
+                            systemImage: "minus",
+                            accessibilityLabel: "Decrease \(shortcutNames[index].lowercased())"
+                        ) { adjustQuickAction(at: index, by: -1) }
+
+                        Spacer(minLength: 0)
+
+                        HStack(alignment: .firstTextBaseline, spacing: 5) {
+                            TextField("Amount", text: $gramTexts[index])
+                                .keyboardType(.decimalPad)
+                                .multilineTextAlignment(.trailing)
+                                .font(.title2.bold().monospacedDigit())
+                                .frame(maxWidth: 82)
+                                .focused($focusedField, equals: .quickAction(index))
+                                .accessibilityLabel("\(shortcutNames[index]) protein amount in grams")
+                            Text("g").font(.subheadline.weight(.semibold)).foregroundStyle(.secondary)
+                        }
+
+                        Spacer(minLength: 0)
+
+                        adjustmentButton(
+                            systemImage: "plus",
+                            accessibilityLabel: "Increase \(shortcutNames[index].lowercased())"
+                        ) { adjustQuickAction(at: index, by: 1) }
+                    }
+                } else if let meal = selectedMeal(for: index) {
+                    Label("Adds \(meal.name) to today", systemImage: "bookmark.fill")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+    }
+
+    private func adjustmentButton(
+        systemImage: String,
+        accessibilityLabel: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Image(systemName: systemImage)
+                .font(.body.weight(.semibold))
+                .frame(width: 44, height: 44)
+                .background(Color(.tertiarySystemFill), in: Circle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(accessibilityLabel)
     }
 
     private func mealSelection(for index: Int) -> Binding<String> {
@@ -348,6 +487,29 @@ private struct ProteinSettingsSheet: View {
             get: { selectedMealIDs[index]?.uuidString ?? "" },
             set: { selectedMealIDs[index] = UUID(uuidString: $0) }
         )
+    }
+
+    private func selectedMeal(for index: Int) -> SavedMeal? {
+        guard let id = selectedMealIDs[index] else { return nil }
+        return meals.first { $0.id == id }
+    }
+
+    private func shortcutPreview(for index: Int) -> String {
+        if let meal = selectedMeal(for: index) { return meal.name }
+        return "+\(gramTexts[index]) g"
+    }
+
+    private func adjustGoal(by amount: Double) {
+        let current = decimal(from: goalText) ?? 120
+        goalText = formattedInput(min(max(current + amount, 20), 400))
+        message = nil
+    }
+
+    private func adjustQuickAction(at index: Int, by amount: Double) {
+        let fallback = QuickAddSlotConfiguration.defaults[index].grams
+        let current = decimal(from: gramTexts[index]) ?? fallback
+        gramTexts[index] = formattedInput(min(max(current + amount, 1), ProteinEntryValidator.maximumGrams))
+        message = nil
     }
 
     private func save() {
@@ -379,6 +541,10 @@ private struct ProteinSettingsSheet: View {
 
     private func decimal(from text: String) -> Double? {
         Double(text.replacingOccurrences(of: ",", with: "."))
+    }
+
+    private func formattedInput(_ value: Double) -> String {
+        String(format: "%g", value)
     }
 }
 
